@@ -2,6 +2,8 @@
 
 A privacy-first whistleblower dApp on the Midnight Network.
 
+This project is built on the Midnight Network.
+
 ## Product Idea
 
 Anonymous Whispers is a decentralized whistleblower platform that lets people
