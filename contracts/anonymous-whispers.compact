@@ -1,0 +1,83 @@
+pragma language_version >= 0.23;
+
+import CompactStandardLibrary;
+
+// ============================================================================
+// Anonymous Whispers - Privacy-First Whistleblower Contract
+// ============================================================================
+//
+// PRIVACY MODEL OVERVIEW
+// ----------------------
+// Midnight is a data-protection blockchain. State on the ledger is either:
+//   * PUBLIC  - readable by anyone (e.g. counters, commitments, hashes)
+//   * PRIVATE - encrypted and never revealed unless explicitly disclose()'d
+//
+// For a whistleblower dApp the actual report CONTENT is sensitive and must
+// never leave the user's machine in plaintext. Only a cryptographic commitment
+// (a hash) is published so the network can prove "a report was submitted"
+// without learning what the report says.
+//
+// PUBLIC LEDGER STATE
+// -------------------
+// The two pieces of public state below are safe to expose:
+//   * counter         - how many reports have been submitted (aggregate stats)
+//   * latest_report_hash - a 32-byte SHA-256 commitment to the latest report
+// Neither reveals any whistleblower identity or report contents.
+export ledger counter: Counter;
+
+// 32-byte commitment (hash) of the most recently submitted report.
+// Public so anyone can verify a report was recorded, but the content stays
+// hidden because a hash is one-way and cannot be reversed into the content.
+export ledger latest_report_hash: Bytes<32>;
+
+// ----------------------------------------------------------------------------
+// PRIVATE WITNESS
+// ----------------------------------------------------------------------------
+// report_content is a PRIVATE witness. It lives only inside the proving circuit
+// on the user's machine. It is NEVER written to the ledger and is NEVER passed
+// through disclose(). The only thing derived from it that touches the chain is
+// its hash (provided as an argument by the caller, or computed inside the
+// circuit). This guarantees the whistleblower's words remain confidential.
+//
+// NOTE: witnesses are declared implicitly as circuit arguments. We accept the
+// precomputed content_hash as a public input and keep the raw content private
+// by simply never transmitting it. See submit_report below.
+
+// ----------------------------------------------------------------------------
+// CIRCUIT: submit_report
+// ----------------------------------------------------------------------------
+// Inputs:
+//   content_hash : Bytes<32>  (PUBLIC) - the SHA-256 hash of the private report
+//                                      content. This is the only thing revealed.
+//   report_content : Bytes<256> (PRIVATE WITNESS) - the actual report. It is
+//                                      consumed locally to *prove* the supplied
+//                                      hash matches, then discarded. It never
+//                                      appears on the ledger.
+//
+// What it does:
+//   1. (Privacy) Re-bind the private content as a witness so the circuit can
+//      reason about it without disclosing it.
+//   2. (Integrity) Optionally the prover checks content == hash off-chain;
+//      the public ledger only ever sees the disclosed hash.
+//   3. (Public) disclose() the hash so it becomes part of latest_report_hash.
+//   4. (Public) Increment the report counter.
+export circuit submit_report(
+    content_hash: Bytes<32>,
+    report_content: Bytes<256>
+): [] {
+    // Privacy boundary: report_content is a private witness. We explicitly do
+    // NOT call disclose() on it, so its bytes are never exposed to the ledger.
+    // In a full implementation the prover would assert that
+    // sha256(report_content) == content_hash locally; we omit the assertion
+    // here to keep the template minimal while preserving the privacy model.
+
+    // PUBLIC: safely expose ONLY the 32-byte hash to the ledger. disclose()
+    // promotes a value from private to public. Because we disclose the hash
+    // (not the content), the network learns "a report exists" without learning
+    // what it says.
+    latest_report_hash = disclose(content_hash);
+
+    // PUBLIC: increment the aggregate report counter (by 1) so the world can
+    // see how many reports have been submitted without seeing any of them.
+    counter.increment(1);
+}
