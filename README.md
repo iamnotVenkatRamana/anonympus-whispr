@@ -16,7 +16,7 @@ identify and punish the source. Anonymous Whispers therefore publishes only a
 cryptographic commitment (a hash) to each report on-chain. The network can
 prove "a report was submitted at time T" without ever learning what the report
 says or who submitted it. The actual report content stays entirely on the
-whisperer's machine — it is never transmitted to the ledger.
+whisperer's machine, it is never transmitted to the ledger.
 
 ## Privacy Model
 
@@ -33,8 +33,8 @@ explicitly disclosed). Anonymous Whispers splits its state along that boundary:
 The `submit_report` circuit takes a `content_hash` (public) and the private
 `report_content` witness. It uses `disclose()` to safely promote **only the
 hash** from private to public. `disclose()` is the boundary function: it
-exposes a specific value to the ledger while leaving everything else — most
-importantly the witness — encrypted and private. Because we disclose the hash
+exposes a specific value to the ledger while leaving everything else, most
+importantly the witness, encrypted and private. Because we disclose the hash
 and not the content, the chain learns "a report exists" without learning what
 it says. The `counter` is incremented (public) so the world can see aggregate
 report counts without seeing any individual report.
@@ -81,6 +81,6 @@ npm run network undeployed   # switch back to the bundled local devnet
 
 ## Screenshots
 
-[INSERT COMPILE SCREENSHOT]
+![Compile Output](./compile.png)
 
-[INSERT DEPLOYMENT SCREENSHOT]
+![Deploy Output](./deploy.png)
