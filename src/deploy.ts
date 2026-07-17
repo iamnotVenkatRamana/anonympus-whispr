@@ -11,6 +11,7 @@ import { createWallet, persistWalletState, unshieldedToken, type WalletContext }
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { WebSocket } from 'ws';
 import * as Rx from 'rxjs';
+import { inspect } from 'node:util';
 
 // Midnight SDK imports
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
@@ -24,8 +25,8 @@ import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-j
 globalThis.WebSocket = WebSocket;
 
 // Identifier under which this contract's private state is stored. The
-// hello-world contract has no witnesses, so its private state is empty ({}).
-const PRIVATE_STATE_ID = 'helloWorldPrivateState';
+// anonymous-whispers contract has no witnesses, so its private state is empty ({}).
+const PRIVATE_STATE_ID = 'anonymousWhispersPrivateState';
 
 // ─── Network configuration ─────────────────────────────────────────────────────
 //
@@ -66,7 +67,7 @@ async function waitForProofServer(maxAttempts = 60, delayMs = 2000): Promise<boo
 // ─── Compiled contract loading ─────────────────────────────────────────────────
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const zkConfigPath = path.resolve(__dirname, '..', 'contracts', 'managed', 'hello-world');
+const zkConfigPath = path.resolve(__dirname, '..', 'contracts', 'managed', 'anonymous-whispers');
 const contractPath = path.join(zkConfigPath, 'contract', 'index.js');
 
 if (!fs.existsSync(contractPath)) {
@@ -76,7 +77,7 @@ if (!fs.existsSync(contractPath)) {
 
 const HelloWorld = await import(pathToFileURL(contractPath).href);
 
-const compiledContract = CompiledContract.make('hello-world', HelloWorld.Contract).pipe(
+const compiledContract = CompiledContract.make('anonymous-whispers', HelloWorld.Contract).pipe(
   CompiledContract.withVacantWitnesses,
   CompiledContract.withCompiledFileAssets(zkConfigPath),
 );
@@ -112,7 +113,7 @@ async function createProviders(walletCtx: WalletContext) {
 
   return {
     privateStateProvider: levelPrivateStateProvider({
-      privateStateStoreName: 'hello-world-state',
+      privateStateStoreName: 'anonymous-whispers-state',
       accountId,
       privateStoragePasswordProvider: () => privateStatePassword,
     }),
@@ -212,28 +213,57 @@ async function main() {
     }
   }
 
-  // Register for DUST.
+// Register for DUST.
   console.log('─── DUST Token Setup ───────────────────────────────────────────\n');
-  const dustState = await Rx.firstValueFrom(walletCtx.wallet.state().pipe(Rx.filter((s) => s.isSynced)));
 
-  const unregisteredUtxos = dustState.unshielded.availableCoins.filter(
-    (c: any) => !c.meta?.registeredForDustGeneration,
-  );
-  if (unregisteredUtxos.length > 0) {
-    console.log(`  Registering ${unregisteredUtxos.length} NIGHT UTXOs for DUST generation...`);
-    // The signDustRegistration callback (3rd arg) already produces a recipe
-    // with N signatures matching N inputs. Do NOT call signRecipe again — that
-    // would double-sign and the chain rejects with InputsSignaturesLengthMismatch
-    // (Custom error 192). Matches upstream example-counter and example-bboard.
-    const recipe = await walletCtx.wallet.registerNightUtxosForDustGeneration(
-      unregisteredUtxos,
-      walletCtx.unshieldedKeystore.getPublicKey(),
-      (payload) => walletCtx.unshieldedKeystore.signData(payload),
+  const DUST_REG_MAX_RETRIES = 6;
+  const DUST_REG_RETRY_DELAY_MS = 4000;
+
+  for (let attempt = 1; attempt <= DUST_REG_MAX_RETRIES; attempt++) {
+    // Re-fetch fresh state every attempt — if a previous attempt's submit
+    // actually landed on-chain before the socket dropped, this UTXO will now
+    // show registeredForDustGeneration=true and we skip resubmitting it.
+    const freshState = await Rx.firstValueFrom(walletCtx.wallet.state().pipe(Rx.filter((s) => s.isSynced)));
+    const stillUnregistered = freshState.unshielded.availableCoins.filter(
+      (c: any) => !c.meta?.registeredForDustGeneration,
     );
-    const finalized = await walletCtx.wallet.finalizeRecipe(recipe);
-    await walletCtx.wallet.submitTransaction(finalized);
+
+    if (stillUnregistered.length === 0) {
+      console.log('  ✓ All NIGHT UTXOs already registered for DUST generation.\n');
+      break;
+    }
+
+    try {
+      console.log(`  Registering ${stillUnregistered.length} NIGHT UTXOs for DUST generation... (attempt ${attempt}/${DUST_REG_MAX_RETRIES})`);
+      const recipe = await walletCtx.wallet.registerNightUtxosForDustGeneration(
+        stillUnregistered,
+        walletCtx.unshieldedKeystore.getPublicKey(),
+        (payload) => walletCtx.unshieldedKeystore.signData(payload),
+      );
+      const finalized = await walletCtx.wallet.finalizeRecipe(recipe);
+      await walletCtx.wallet.submitTransaction(finalized);
+      console.log('  ✓ DUST registration submitted.\n');
+      break;
+    } catch (err: any) {
+      // Effect-TS wraps failures in a FiberFailure/Cause, not a plain
+      // Error.cause chain — util.inspect is what correctly unwraps it
+      // (it's the same renderer Node used when this crashed uncaught earlier).
+      const msg = inspect(err, { depth: 10 });
+      const isDisconnect = msg.includes('disconnected from') || msg.includes('Normal Closure');
+      const isValidityWindow = msg.includes('Custom error: 171') || msg.includes('OutOfDustValidityWindow');
+
+      if ((isDisconnect || isValidityWindow) && attempt < DUST_REG_MAX_RETRIES) {
+        console.warn(`  ⚠ ${isDisconnect ? 'WS disconnected' : 'Stale validity window'} during registration, re-checking chain state and retrying in ${(DUST_REG_RETRY_DELAY_MS * attempt) / 1000}s...`);
+        await new Promise((r) => setTimeout(r, DUST_REG_RETRY_DELAY_MS * attempt));
+        continue;
+      }
+      console.error(`  ❌ DUST registration failed after ${attempt} attempt(s): ${msg}`);
+      await walletCtx.wallet.stop();
+      process.exit(1);
+    }
   }
 
+  const dustState = await Rx.firstValueFrom(walletCtx.wallet.state().pipe(Rx.filter((s) => s.isSynced)));
   if (dustState.dust.balance(new Date()) === 0n) {
     console.log('  Waiting for DUST tokens...');
     await Rx.firstValueFrom(
@@ -284,9 +314,9 @@ async function main() {
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       // Midnight.js 4.1.x supplies private state via privateStateId +
-      // initialPrivateState (empty here — the hello-world contract has no
+      // initialPrivateState (empty here — the anonymous-whispers contract has no
       // witnesses). args is the contract constructor's arguments: empty for
-      // hello-world's no-arg constructor. (Statically-typed contracts can omit
+      // anonymous-whispers' no-arg constructor. (Statically-typed contracts can omit
       // args entirely; this script loads the contract dynamically, so the
       // conditional args type widens to any[] and an explicit [] is required.)
       deployed = await deployContract(providers, {
