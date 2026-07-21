@@ -78,6 +78,39 @@ const useScramble = (target: string, active: boolean) => {
   return display;
 };
 
+/**
+ * Walks an error's `cause` chain and renders every link, so nested SDK
+ * failures aren't hidden behind a bare top-level message. Non-Error links
+ * (the SDK sometimes chains plain objects) are JSON-serialized with the
+ * getOwnPropertyNames trick, since String() on those yields "[object Object]".
+ */
+const fullErrorText = (error: unknown): string => {
+  const describe = (value: unknown): string => {
+    if (value instanceof Error) return `${value.name || 'Error'}: ${value.message}`;
+    if (typeof value === 'object' && value !== null) {
+      try {
+        return JSON.stringify(value, Object.getOwnPropertyNames(value));
+      } catch {
+        return String(value);
+      }
+    }
+    return String(value);
+  };
+
+  const parts: string[] = [];
+  const seen = new Set<unknown>();
+  for (
+    let current: unknown = error;
+    current !== undefined && current !== null && !seen.has(current);
+    current = current instanceof Error ? current.cause : (current as { cause?: unknown }).cause
+  ) {
+    seen.add(current);
+    parts.push(describe(current));
+    if (typeof current !== 'object') break;
+  }
+  return parts.join(' | caused by | ') || 'Unknown error';
+};
+
 export function CircuitCall({ api, address, onSubmitted }: Props) {
   const [text, setText] = useState('');
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
@@ -114,10 +147,10 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
       setPhase({ kind: 'done', hash, txId: tx.public.txId });
       onSubmitted();
     } catch (error) {
-      setPhase({
-        kind: 'error',
-        message: error instanceof Error ? error.message : String(error),
-      });
+      // The raw object, not a string: DevTools renders it as an expandable
+      // tree, which is the only reliable view of SDK errors.
+      console.error('submit_report failed:', error);
+      setPhase({ kind: 'error', message: fullErrorText(error) });
     }
   }, [text, api, address, onSubmitted]);
 
