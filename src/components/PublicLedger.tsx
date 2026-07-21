@@ -1,5 +1,5 @@
 /**
- * The contract's public state — everything the chain actually knows.
+ * The contract's public state: everything the chain actually knows.
  *
  * Shown deliberately: the counter and the latest hash are the *complete* public
  * record of a report. Putting them next to the form makes the boundary concrete,
@@ -46,36 +46,36 @@ export function PublicLedger({ refreshToken }: Props) {
   const hasReport = state !== null && !EMPTY_HASH.test(latestHash);
 
   return (
-    <section className="rounded-lg border border-edge bg-surface/20 p-6">
-      <h2 className="text-xs tracking-[0.2em] text-muted uppercase">On-chain record</h2>
+    <section className="card-glow rounded-2xl border border-edge-lit bg-surface/40 p-8">
+      <h2 className="text-sm tracking-[0.25em] text-signal/80 uppercase">On-chain record</h2>
 
-      {loading && <p className="mt-4 text-xs text-muted">Reading public state...</p>}
+      {loading && <p className="mt-5 text-base text-muted">Reading public state...</p>}
 
       {error && (
-        <p className="mt-4 text-xs text-warn">
+        <p className="mt-5 text-base text-warn">
           Could not reach the Preview indexer. {error}
         </p>
       )}
 
       {state && (
-        <div className="mt-5 flex flex-col gap-5">
+        <div className="mt-7 flex flex-col gap-7">
           <div>
-            <p className="text-xs text-muted">Reports submitted</p>
-            <p className="mt-1 font-mono text-3xl text-bright tabular-nums">
+            <p className="text-sm text-muted">Reports submitted</p>
+            <p className="mt-2 font-mono text-6xl font-semibold text-bright tabular-nums">
               {state.counter.toString()}
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-muted">Latest report hash</p>
-            <p className="mt-1 font-mono text-xs leading-relaxed break-all text-dim">
+            <p className="text-sm text-muted">Latest report hash</p>
+            <p className="mt-2 font-mono text-sm leading-relaxed break-all text-dim">
               {hasReport ? latestHash : 'None yet'}
             </p>
           </div>
 
-          <p className="border-t border-edge pt-4 text-xs leading-relaxed text-muted">
+          <p className="border-t border-edge pt-6 text-base leading-relaxed text-muted">
             This is the entire public record. Report contents are never written to the
-            chain, so they cannot be read back — not by us, not by anyone.
+            chain, so they cannot be read back, not by us, not by anyone.
           </p>
         </div>
       )}

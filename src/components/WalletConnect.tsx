@@ -5,7 +5,7 @@
  *
  *   1. `connect()` returns a *different* object than the one it was called on.
  *      The injected `InitialAPI` has only { rdns, name, icon, apiVersion,
- *      connect }. Everything useful — addresses, balancing, submitting — lives
+ *      connect }. Everything useful (addresses, balancing, submitting) lives
  *      on the `ConnectedAPI` that `connect()` resolves to. Keeping a reference
  *      to the injected object after connecting gets you nothing but undefined.
  *
@@ -44,7 +44,7 @@ const discoverWallets = (): InitialAPI[] => Object.values(window.midnight ?? {})
 const findPreferredWallet = (wallets: InitialAPI[]): InitialAPI | undefined =>
   wallets.find((wallet) => wallet.rdns.toLowerCase().includes('lace')) ?? wallets[0];
 
-/** `mn_shield-addr1abc...4ysm` — enough to recognize, too little to read out. */
+/** `mn_shield-addr1abc...4ysm`: enough to recognize, too little to read out. */
 const truncateAddress = (address: string): string =>
   address.length <= 22 ? address : `${address.slice(0, 12)}...${address.slice(-4)}`;
 
@@ -125,18 +125,15 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
         return;
       }
 
-      // Without this, Lace rejects the submit path later with "Unauthorized
-      // request origin". These are every connector method the submit flow
-      // touches: getShieldedAddresses (wallet provider), getProvingProvider
-      // (proof provider), and the balance/submit pair. Hinting once here puts
-      // the permission prompt at the natural connect moment instead of
-      // mid-submit, and resolves only after the user grants access.
-      // Ask permission for the submit-path methods up front, so the prompt
-      // appears at the natural connect moment instead of mid-submit.
+      // Ask permission for the submit-path methods up front, so any prompt
+      // appears at the natural connect moment instead of mid-submit. These are
+      // every connector method the submit flow touches: getShieldedAddresses
+      // (wallet provider), getProvingProvider (proof provider), and the
+      // balance/submit pair.
       //
       // Feature-detected because the types run ahead of the wallets: Lace
       // 4.0.1 sets `hintUsage` as an own property on the connected object with
-      // the value `undefined` — declared, not implemented — so a `'hintUsage'
+      // the value `undefined` (declared, not implemented), so a `'hintUsage'
       // in api` check would pass and then throw. Only a typeof check is safe.
       // Its error string mentions a legacy `.enable()`, which is likewise
       // absent from both the injected and connected objects, hence the second
@@ -176,7 +173,7 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
   }, [onConnect]);
 
   const handleDisconnect = useCallback(() => {
-    // No API call exists — and none is needed. Releasing the reference is the
+    // No API call exists, and none is needed. Releasing the reference is the
     // disconnect.
     setStatus({ kind: 'idle' });
     onDisconnect();
@@ -185,19 +182,19 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
   if (connection) {
     return (
       <div className="flex items-center gap-3">
-        <span className="flex items-center gap-2 rounded-full border border-edge bg-surface px-3 py-1.5">
+        <span className="flex items-center gap-2.5 rounded-full border border-edge-lit bg-surface px-4 py-2">
           <span
-            className="animate-pulse-ring size-1.5 rounded-full bg-signal"
+            className="animate-pulse-ring size-2 rounded-full bg-signal"
             aria-hidden="true"
           />
-          <span className="font-mono text-xs text-dim" title={connection.address}>
+          <span className="font-mono text-sm text-dim" title={connection.address}>
             {truncateAddress(connection.address)}
           </span>
         </span>
         <button
           type="button"
           onClick={handleDisconnect}
-          className="text-xs text-muted transition-colors hover:text-dim"
+          className="rounded-full border border-transparent px-3 py-2 text-sm text-signal/70 transition-colors hover:border-signal-deep/50 hover:text-signal"
         >
           Disconnect
         </button>
@@ -211,20 +208,20 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
         type="button"
         onClick={handleConnect}
         disabled={status.kind === 'connecting'}
-        className="rounded-full border border-edge-lit bg-surface px-4 py-1.5 text-xs text-dim transition-colors hover:border-signal-deep hover:text-bright disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-full bg-signal px-6 py-3 text-sm font-semibold text-void transition-colors hover:bg-signal/85 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {status.kind === 'connecting' ? 'Connecting...' : 'Connect wallet'}
       </button>
 
       {status.kind === 'error' && (
         <div className="max-w-xs text-right" role="alert">
-          <p className="text-xs text-alert">{status.message}</p>
-          {status.hint && <p className="mt-0.5 text-xs text-muted">{status.hint}</p>}
+          <p className="text-sm text-alert">{status.message}</p>
+          {status.hint && <p className="mt-1 text-sm text-muted">{status.hint}</p>}
         </div>
       )}
 
       {status.kind === 'idle' && wallets.length === 0 && (
-        <p className="text-xs text-muted">No wallet detected</p>
+        <p className="text-sm text-muted">No wallet detected</p>
       )}
     </div>
   );

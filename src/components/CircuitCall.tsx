@@ -3,7 +3,7 @@
  *
  * The privacy claim this app makes is easy to state and hard to *show*: the
  * report text never leaves the browser, only a proof does. So the submit
- * interaction is built to make that visible — the plaintext is dropped from
+ * interaction is built to make that visible: the plaintext is dropped from
  * component state the instant the circuit call begins, and the UI animates the
  * text resolving into its hash. After that point there is no code path that
  * could render the report back, because the string no longer exists.
@@ -38,7 +38,7 @@ const toHexString = (bytes: Uint8Array) =>
 
 /**
  * Pads or truncates the report to exactly `Bytes<256>` and hashes *the padded
- * buffer* — the padded bytes are what the circuit actually sees, so hashing the
+ * buffer*: the padded bytes are what the circuit actually sees, so hashing the
  * raw text instead would produce a hash the proof doesn't attest to. This
  * mirrors the Node path in src/cli.ts byte for byte.
  */
@@ -158,14 +158,21 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
 
   if (proving) {
     return (
-      <section className="flex min-h-56 flex-col justify-center gap-6 rounded-lg border border-edge bg-surface/40 p-8">
-        <p className="animate-flicker text-center text-xs tracking-[0.2em] text-signal uppercase">
-          Generating proof
-        </p>
-        <p className="font-mono text-sm break-all text-signal/90 selection:bg-signal-deep">
+      <section className="relative flex min-h-64 flex-col justify-center gap-7 overflow-hidden rounded-2xl border border-signal-deep/40 bg-surface/50 p-10">
+        <div
+          className="animate-glow-breathe pointer-events-none absolute inset-x-0 top-1/2 mx-auto h-40 w-3/4 -translate-y-1/2 rounded-full bg-signal/10 blur-3xl"
+          aria-hidden="true"
+        />
+        <div className="relative flex items-center justify-center gap-3">
+          <span className="animate-pulse-ring size-2.5 rounded-full bg-signal" aria-hidden="true" />
+          <p className="animate-flicker text-sm tracking-[0.25em] text-signal uppercase">
+            Generating proof
+          </p>
+        </div>
+        <p className="relative font-mono text-base break-all text-signal/90 selection:bg-signal-deep">
           {scrambled}
         </p>
-        <p className="text-center text-xs text-muted">
+        <p className="relative text-center text-base text-dim">
           Your report is being proven inside your wallet. It is not being sent anywhere.
         </p>
       </section>
@@ -174,27 +181,45 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
 
   if (phase.kind === 'done') {
     return (
-      <section className="flex flex-col gap-6 rounded-lg border border-signal-deep/50 bg-surface/40 p-8">
+      <section className="card-glow flex flex-col gap-7 rounded-2xl border border-signal-deep/50 bg-surface/50 p-10">
         <div>
-          <p className="text-xs tracking-[0.2em] text-signal uppercase">Report submitted</p>
-          <p className="mt-4 text-xs text-muted">Content hash</p>
-          <p className="mt-1 font-mono text-sm break-all text-bright">{phase.hash}</p>
+          <p className="text-sm tracking-[0.25em] text-signal uppercase">Report submitted</p>
+          <p className="mt-6 text-sm text-muted">Content hash</p>
+          <p className="mt-1.5 font-mono text-base leading-relaxed break-all text-bright">
+            {phase.hash}
+          </p>
         </div>
 
         <div>
-          <p className="text-xs text-muted">Transaction</p>
-          <p className="mt-1 font-mono text-xs break-all text-dim">{phase.txId}</p>
+          <p className="text-sm text-muted">Transaction</p>
+          <p className="mt-1.5 font-mono text-sm leading-relaxed break-all text-dim">
+            {phase.txId}
+          </p>
         </div>
 
-        <p className="flex items-center gap-2 border-t border-edge pt-4 text-xs text-signal">
-          <span className="size-1.5 rounded-full bg-signal" aria-hidden="true" />
+        <p className="flex items-center gap-3 border-t border-edge pt-6 text-base font-medium text-signal">
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            className="size-6 shrink-0"
+            aria-hidden="true"
+          >
+            <circle cx="10" cy="10" r="9" className="stroke-signal" strokeWidth="1.5" />
+            <path
+              d="M6 10.5l2.5 2.5L14 7.5"
+              className="stroke-signal"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
           Proved without revealing your input
         </p>
 
         <button
           type="button"
           onClick={() => setPhase({ kind: 'idle' })}
-          className="self-start text-xs text-muted transition-colors hover:text-dim"
+          className="self-start rounded-full border border-signal-deep/50 px-5 py-2.5 text-sm text-signal/80 transition-colors hover:bg-signal-deep/20 hover:text-signal"
         >
           Write another
         </button>
@@ -208,25 +233,25 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
         value={text}
         onChange={(event) => setText(event.target.value)}
         maxLength={REPORT_CONTENT_BYTES}
-        rows={6}
+        rows={7}
         placeholder="Your report stays yours."
-        className="w-full resize-none rounded-lg border border-edge bg-surface/40 p-5 text-sm leading-relaxed text-bright transition-colors outline-none placeholder:text-muted focus:border-edge-lit"
+        className="focus-glow w-full resize-none rounded-2xl border border-edge bg-surface/50 p-7 text-lg leading-relaxed text-bright transition-[border-color,box-shadow] outline-none placeholder:text-muted"
       />
 
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-muted">{remaining} bytes left</span>
+        <span className="font-mono text-sm text-muted">{remaining} bytes left</span>
         <button
           type="button"
           onClick={handleSubmit}
           disabled={text.trim().length === 0}
-          className="rounded-full border border-signal-deep bg-signal-deep/15 px-5 py-2 text-xs tracking-wide text-signal transition-colors hover:bg-signal-deep/30 disabled:cursor-not-allowed disabled:border-edge disabled:bg-transparent disabled:text-muted"
+          className="rounded-full bg-signal px-6 py-3 text-sm font-semibold tracking-wide text-void transition-colors hover:bg-signal/85 disabled:cursor-not-allowed disabled:bg-edge disabled:text-muted"
         >
           Submit anonymously
         </button>
       </div>
 
       {phase.kind === 'error' && (
-        <p className="text-xs text-alert" role="alert">
+        <p className="text-sm leading-relaxed break-all text-alert" role="alert">
           {phase.message}
         </p>
       )}

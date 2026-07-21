@@ -5,6 +5,8 @@ import { PublicLedger } from './components/PublicLedger';
 import { WalletConnect, type WalletConnection } from './components/WalletConnect';
 import { CONTRACT_ADDRESS, NETWORK_ID } from './lib/contract';
 
+const EXPLORER_CONTRACT_URL = `https://preview.midnightexplorer.com/contracts/${CONTRACT_ADDRESS}`;
+
 export default function App() {
   const [connection, setConnection] = useState<WalletConnection | null>(null);
   const [refreshToken, setRefreshToken] = useState(0);
@@ -14,11 +16,13 @@ export default function App() {
 
   return (
     <div className="min-h-full bg-void">
-      <div className="mx-auto flex min-h-full max-w-3xl flex-col px-6 py-10">
-        <header className="flex items-start justify-between gap-6">
+      <div className="mx-auto flex min-h-full max-w-3xl flex-col px-6 py-12">
+        <header className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <h1 className="text-lg tracking-tight text-bright">Anonymous Whispers</h1>
-            <p className="mt-1 text-xs text-muted">
+            <h1 className="text-5xl font-semibold tracking-tight text-bright">
+              Anonymous Whispers
+            </h1>
+            <p className="mt-3 text-lg text-dim">
               Report something. Prove you did. Reveal nothing.
             </p>
           </div>
@@ -29,7 +33,7 @@ export default function App() {
           />
         </header>
 
-        <main className="mt-14 flex flex-col gap-10">
+        <main className="mt-16 flex flex-col gap-10">
           {connection ? (
             <CircuitCall
               api={connection.api}
@@ -37,11 +41,11 @@ export default function App() {
               onSubmitted={handleSubmitted}
             />
           ) : (
-            <section className="rounded-lg border border-dashed border-edge p-10 text-center">
-              <p className="text-sm text-dim">Connect a wallet to submit a report.</p>
-              <p className="mx-auto mt-3 max-w-md text-xs leading-relaxed text-muted">
+            <section className="rounded-2xl border border-dashed border-edge-lit bg-surface/30 p-12 text-center">
+              <p className="text-lg text-bright">Connect a wallet to submit a report.</p>
+              <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-dim">
                 Your report is hashed and proven locally. The proof is generated inside
-                your wallet — the text itself is never transmitted, stored, or logged.
+                your wallet; the text itself is never transmitted, stored, or logged.
               </p>
             </section>
           )}
@@ -49,16 +53,28 @@ export default function App() {
           <PublicLedger refreshToken={refreshToken} />
         </main>
 
-        <footer className="mt-auto pt-14">
-          <dl className="flex flex-wrap gap-x-8 gap-y-2 text-xs">
-            <div className="flex gap-2">
+        <footer className="mt-auto pt-16">
+          <dl className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm">
+            <div className="flex items-center gap-2">
               <dt className="text-muted">Network</dt>
-              <dd className="text-dim capitalize">{NETWORK_ID}</dd>
+              <dd>
+                <span className="rounded-full border border-signal-deep/50 bg-signal-deep/15 px-3 py-1 text-xs font-medium text-signal capitalize">
+                  {NETWORK_ID}
+                </span>
+              </dd>
             </div>
-            <div className="flex min-w-0 gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <dt className="text-muted">Contract</dt>
-              <dd className="truncate font-mono text-dim" title={CONTRACT_ADDRESS}>
-                {CONTRACT_ADDRESS}
+              <dd className="min-w-0">
+                <a
+                  href={EXPLORER_CONTRACT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block max-w-72 truncate font-mono text-dim underline decoration-edge-lit underline-offset-4 transition-colors hover:text-signal hover:decoration-signal sm:max-w-96"
+                  title={`${CONTRACT_ADDRESS} (view on Midnight Explorer)`}
+                >
+                  {CONTRACT_ADDRESS}
+                </a>
               </dd>
             </div>
           </dl>

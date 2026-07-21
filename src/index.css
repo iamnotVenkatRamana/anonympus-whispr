@@ -1,22 +1,26 @@
 @import 'tailwindcss';
 
 /**
- * "Signal in the dark" — near-black ground, one cold accent, muted grays.
+ * "Signal in the dark", warmed up: a very dark violet ground instead of
+ * near-black, readable light grays for body text, and one warm violet accent.
  * The palette is deliberately small: the only saturated color in the app is
  * the signal color, so anything that glows is something the user should read.
+ *
+ * Token names are stable (void, surface, signal, ...) so components never
+ * need to change when the palette shifts; only the values here do.
  */
 @theme {
-  --color-void: #0a0a0f;
-  --color-surface: #101017;
-  --color-edge: #1e1e29;
-  --color-edge-lit: #2b2b3d;
-  --color-muted: #6b6b7d;
-  --color-dim: #9a9aad;
-  --color-bright: #e6e6f0;
-  --color-signal: #4de3d0;
-  --color-signal-deep: #1b6f66;
+  --color-void: #0f0d1a;
+  --color-surface: #171429;
+  --color-edge: #262240;
+  --color-edge-lit: #383157;
+  --color-muted: #8b87a0;
+  --color-dim: #c4c4d0;
+  --color-bright: #f5f5f7;
+  --color-signal: #a78bfa;
+  --color-signal-deep: #6d55c7;
   --color-warn: #e3a34d;
-  --color-alert: #e35d5d;
+  --color-alert: #f87171;
 
   --font-mono: ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
 }
@@ -29,6 +33,14 @@ body,
 
 body {
   background-color: var(--color-void);
+  /* A faint violet glow bleeding from the top keeps the dark ground from
+     reading as flat black. */
+  background-image: radial-gradient(
+    ellipse 80% 50% at 50% -20%,
+    rgb(167 139 250 / 0.08),
+    transparent
+  );
+  background-repeat: no-repeat;
   color: var(--color-bright);
   -webkit-font-smoothing: antialiased;
 }
@@ -36,7 +48,7 @@ body {
 /* The scramble that plays while a proof is being generated: characters churn
    while the plaintext is still in memory, then the hash resolves out of it.
    This is the one place motion is doing real explanatory work, so it is
-   exempt from the general restraint — but not from prefers-reduced-motion. */
+   exempt from the general restraint, but not from prefers-reduced-motion. */
 @keyframes flicker {
   0%,
   100% {
@@ -49,13 +61,27 @@ body {
 
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgb(77 227 208 / 0.4);
+    box-shadow: 0 0 0 0 rgb(167 139 250 / 0.45);
   }
   70% {
-    box-shadow: 0 0 0 6px rgb(77 227 208 / 0);
+    box-shadow: 0 0 0 6px rgb(167 139 250 / 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgb(77 227 208 / 0);
+    box-shadow: 0 0 0 0 rgb(167 139 250 / 0);
+  }
+}
+
+/* The proving state's "cryptographic magic" moment: a soft accent glow that
+   slowly breathes behind the resolving hash. */
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.15);
   }
 }
 
@@ -67,9 +93,31 @@ body {
   animation: pulse-ring 2.4s ease-out infinite;
 }
 
+.animate-glow-breathe {
+  animation: glow-breathe 3.2s ease-in-out infinite;
+}
+
+/* Accent glow on the focused report field: low-alpha ring plus a faint outer
+   bloom, so focus reads as invitation rather than alarm. */
+.focus-glow:focus {
+  border-color: rgb(167 139 250 / 0.6);
+  box-shadow:
+    0 0 0 3px rgb(167 139 250 / 0.15),
+    0 0 24px 0 rgb(167 139 250 / 0.1);
+}
+
+/* Elevation for the on-chain record card: hairline top highlight standing in
+   for light, no drop shadows. */
+.card-glow {
+  box-shadow:
+    inset 0 1px 0 0 rgb(167 139 250 / 0.08),
+    inset 0 0 40px 0 rgb(167 139 250 / 0.03);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-flicker,
-  .animate-pulse-ring {
+  .animate-pulse-ring,
+  .animate-glow-breathe {
     animation: none;
   }
 }
