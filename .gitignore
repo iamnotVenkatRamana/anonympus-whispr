@@ -18,6 +18,11 @@ build/
 # Contract artifacts (contracts/managed/ is committed on purpose so reviewers
 # can see the compiled circuit, keys, and ZKIR without recompiling)
 
+# Browser-servable copy of the ZK artifacts. Generated from contracts/managed/
+# by `npm run sync:zk-assets`, which predev/prebuild:web run automatically, so
+# this is a pure duplicate of files already committed above.
+public/zk/
+
 # Deployment info
 deployment.json
 
