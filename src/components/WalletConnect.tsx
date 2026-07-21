@@ -131,12 +131,35 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
       // (proof provider), and the balance/submit pair. Hinting once here puts
       // the permission prompt at the natural connect moment instead of
       // mid-submit, and resolves only after the user grants access.
-      await api.hintUsage([
-        'getShieldedAddresses',
-        'getProvingProvider',
-        'balanceUnsealedTransaction',
-        'submitTransaction',
-      ]);
+      // Ask permission for the submit-path methods up front, so the prompt
+      // appears at the natural connect moment instead of mid-submit.
+      //
+      // Feature-detected because the types run ahead of the wallets: Lace
+      // 4.0.1 sets `hintUsage` as an own property on the connected object with
+      // the value `undefined` — declared, not implemented — so a `'hintUsage'
+      // in api` check would pass and then throw. Only a typeof check is safe.
+      // Its error string mentions a legacy `.enable()`, which is likewise
+      // absent from both the injected and connected objects, hence the second
+      // probe. When neither exists the wallet grants permissions implicitly at
+      // connect() time (or prompts per call), so proceeding is correct.
+      if (typeof api.hintUsage === 'function') {
+        await api.hintUsage([
+          'getShieldedAddresses',
+          'getProvingProvider',
+          'balanceUnsealedTransaction',
+          'submitTransaction',
+        ]);
+      } else {
+        const legacyEnable = (api as { enable?: unknown }).enable;
+        if (typeof legacyEnable === 'function') {
+          await (legacyEnable as () => Promise<unknown>).call(api);
+        } else {
+          console.warn(
+            `${wallet.name} (connector ${wallet.apiVersion}) implements neither ` +
+              'hintUsage() nor enable(); relying on permissions granted at connect().',
+          );
+        }
+      }
 
       // Returns an object, not a string.
       const { unshieldedAddress } = await api.getUnshieldedAddress();
