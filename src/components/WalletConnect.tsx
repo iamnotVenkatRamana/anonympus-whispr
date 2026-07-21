@@ -125,6 +125,19 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
         return;
       }
 
+      // Without this, Lace rejects the submit path later with "Unauthorized
+      // request origin". These are every connector method the submit flow
+      // touches: getShieldedAddresses (wallet provider), getProvingProvider
+      // (proof provider), and the balance/submit pair. Hinting once here puts
+      // the permission prompt at the natural connect moment instead of
+      // mid-submit, and resolves only after the user grants access.
+      await api.hintUsage([
+        'getShieldedAddresses',
+        'getProvingProvider',
+        'balanceUnsealedTransaction',
+        'submitTransaction',
+      ]);
+
       // Returns an object, not a string.
       const { unshieldedAddress } = await api.getUnshieldedAddress();
 
