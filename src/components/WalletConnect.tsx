@@ -182,19 +182,19 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
   if (connection) {
     return (
       <div className="flex items-center gap-3">
-        <span className="flex items-center gap-2.5 rounded-full border border-edge-lit bg-surface px-4 py-2">
+        <span className="flex items-center gap-2.5 rounded-lg border border-edge bg-void/70 px-4 py-2 shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.4)]">
           <span
             className="animate-pulse-ring size-2 rounded-full bg-signal"
             aria-hidden="true"
           />
-          <span className="font-mono text-sm text-dim" title={connection.address}>
+          <span className="font-mono text-sm text-signal/90" title={connection.address}>
             {truncateAddress(connection.address)}
           </span>
         </span>
         <button
           type="button"
           onClick={handleDisconnect}
-          className="rounded-full border border-transparent px-3 py-2 text-sm text-signal/70 transition-colors hover:border-signal-deep/50 hover:text-signal"
+          className="rounded-lg border border-signal/15 px-3 py-1.5 text-sm text-signal/60 transition-colors hover:border-signal/40 hover:text-signal"
         >
           Disconnect
         </button>
@@ -208,7 +208,7 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
         type="button"
         onClick={handleConnect}
         disabled={status.kind === 'connecting'}
-        className="rounded-full bg-signal px-6 py-3 text-sm font-semibold text-void transition-colors hover:bg-signal/85 disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-lg bg-signal px-6 py-3 text-sm font-semibold text-void transition-colors hover:bg-signal-deep disabled:cursor-not-allowed disabled:opacity-50"
       >
         {status.kind === 'connecting' ? 'Connecting...' : 'Connect wallet'}
       </button>

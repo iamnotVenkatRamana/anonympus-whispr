@@ -46,8 +46,8 @@ export function PublicLedger({ refreshToken }: Props) {
   const hasReport = state !== null && !EMPTY_HASH.test(latestHash);
 
   return (
-    <section className="card-glow rounded-2xl border border-edge-lit bg-surface/40 p-8">
-      <h2 className="text-sm tracking-[0.25em] text-signal/80 uppercase">On-chain record</h2>
+    <section className="rounded-b-2xl border-t-2 border-edge-lit bg-surface/70 p-8">
+      <h2 className="text-sm tracking-[0.25em] text-signal uppercase">On-chain record</h2>
 
       {loading && <p className="mt-5 text-base text-muted">Reading public state...</p>}
 
@@ -61,7 +61,7 @@ export function PublicLedger({ refreshToken }: Props) {
         <div className="mt-7 flex flex-col gap-7">
           <div>
             <p className="text-sm text-muted">Reports submitted</p>
-            <p className="mt-2 font-mono text-6xl font-semibold text-bright tabular-nums">
+            <p className="mt-2 font-serif text-7xl font-medium text-signal tabular-nums">
               {state.counter.toString()}
             </p>
           </div>

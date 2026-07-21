@@ -158,21 +158,17 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
 
   if (proving) {
     return (
-      <section className="relative flex min-h-64 flex-col justify-center gap-7 overflow-hidden rounded-2xl border border-signal-deep/40 bg-surface/50 p-10">
-        <div
-          className="animate-glow-breathe pointer-events-none absolute inset-x-0 top-1/2 mx-auto h-40 w-3/4 -translate-y-1/2 rounded-full bg-signal/10 blur-3xl"
-          aria-hidden="true"
-        />
-        <div className="relative flex items-center justify-center gap-3">
-          <span className="animate-pulse-ring size-2.5 rounded-full bg-signal" aria-hidden="true" />
-          <p className="animate-flicker text-sm tracking-[0.25em] text-signal uppercase">
+      <section className="flex min-h-64 flex-col justify-center gap-7 rounded-2xl border border-edge bg-surface/70 p-10">
+        <div className="mx-auto flex flex-col items-center gap-2">
+          <p className="text-sm tracking-[0.25em] text-signal uppercase">
             Generating proof
           </p>
+          <span className="gold-shimmer h-px w-48" aria-hidden="true" />
         </div>
-        <p className="relative font-mono text-base break-all text-signal/90 selection:bg-signal-deep">
+        <p className="font-mono text-base break-all text-signal/90 selection:bg-signal-deep">
           {scrambled}
         </p>
-        <p className="relative text-center text-base text-dim">
+        <p className="text-center text-base text-dim">
           Your report is being proven inside your wallet. It is not being sent anywhere.
         </p>
       </section>
@@ -181,7 +177,7 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
 
   if (phase.kind === 'done') {
     return (
-      <section className="card-glow flex flex-col gap-7 rounded-2xl border border-signal-deep/50 bg-surface/50 p-10">
+      <section className="flex flex-col gap-7 rounded-b-lg border-t border-signal/40 bg-surface/50 p-10">
         <div>
           <p className="text-sm tracking-[0.25em] text-signal uppercase">Report submitted</p>
           <p className="mt-6 text-sm text-muted">Content hash</p>
@@ -219,7 +215,7 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
         <button
           type="button"
           onClick={() => setPhase({ kind: 'idle' })}
-          className="self-start rounded-full border border-signal-deep/50 px-5 py-2.5 text-sm text-signal/80 transition-colors hover:bg-signal-deep/20 hover:text-signal"
+          className="self-start rounded-lg border border-signal/15 px-4 py-2 text-sm text-signal/60 transition-colors hover:border-signal/40 hover:text-signal"
         >
           Write another
         </button>
@@ -228,14 +224,14 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
   }
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-5 py-6">
       <textarea
         value={text}
         onChange={(event) => setText(event.target.value)}
         maxLength={REPORT_CONTENT_BYTES}
         rows={7}
         placeholder="Your report stays yours."
-        className="focus-glow w-full resize-none rounded-2xl border border-edge bg-surface/50 p-7 text-lg leading-relaxed text-bright transition-[border-color,box-shadow] outline-none placeholder:text-muted"
+        className="focus-glow w-full resize-none rounded-2xl border border-edge bg-transparent p-7 text-lg leading-relaxed text-bright transition-[border-color,box-shadow] outline-none placeholder:font-serif placeholder:italic placeholder:text-muted"
       />
 
       <div className="flex items-center justify-between">
@@ -244,7 +240,7 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
           type="button"
           onClick={handleSubmit}
           disabled={text.trim().length === 0}
-          className="rounded-full bg-signal px-6 py-3 text-sm font-semibold tracking-wide text-void transition-colors hover:bg-signal/85 disabled:cursor-not-allowed disabled:bg-edge disabled:text-muted"
+          className="rounded-lg bg-signal px-6 py-3 text-sm font-semibold tracking-wide text-void transition-colors hover:bg-signal-deep disabled:cursor-not-allowed disabled:bg-edge disabled:text-muted"
         >
           Submit anonymously
         </button>

@@ -19,10 +19,26 @@ export default function App() {
       <div className="mx-auto flex min-h-full max-w-3xl flex-col px-6 py-12">
         <header className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <h1 className="text-5xl font-semibold tracking-tight text-bright">
-              Anonymous Whispers
-            </h1>
-            <p className="mt-3 text-lg text-dim">
+            <div className="flex items-center gap-4">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-11 shrink-0 text-signal"
+                aria-hidden="true"
+              >
+                <path d="M3 9c0-2 4-3.5 9-3.5S21 7 21 9v2c0 4-3 7.5-5.5 7.5-1.4 0-2.7-1-3.5-2.3-.8 1.3-2.1 2.3-3.5 2.3C6 18.5 3 15 3 11z" />
+                <circle cx="8.5" cy="11.5" r="1.3" />
+                <circle cx="15.5" cy="11.5" r="1.3" />
+              </svg>
+              <h1 className="font-serif text-6xl font-medium tracking-tight text-bright">
+                Anonymous Whispers
+              </h1>
+            </div>
+            <p className="mt-4 font-serif text-xl italic text-dim">
               Report something. Prove you did. Reveal nothing.
             </p>
           </div>
@@ -57,11 +73,7 @@ export default function App() {
           <dl className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm">
             <div className="flex items-center gap-2">
               <dt className="text-muted">Network</dt>
-              <dd>
-                <span className="rounded-full border border-signal-deep/50 bg-signal-deep/15 px-3 py-1 text-xs font-medium text-signal capitalize">
-                  {NETWORK_ID}
-                </span>
-              </dd>
+              <dd className="font-medium text-signal capitalize">{NETWORK_ID}</dd>
             </div>
             <div className="flex min-w-0 items-center gap-2">
               <dt className="text-muted">Contract</dt>
@@ -70,7 +82,7 @@ export default function App() {
                   href={EXPLORER_CONTRACT_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block max-w-72 truncate font-mono text-dim underline decoration-edge-lit underline-offset-4 transition-colors hover:text-signal hover:decoration-signal sm:max-w-96"
+                  className="block max-w-72 truncate font-mono text-signal/80 underline decoration-signal/30 underline-offset-4 transition-colors hover:text-signal hover:decoration-signal sm:max-w-96"
                   title={`${CONTRACT_ADDRESS} (view on Midnight Explorer)`}
                 >
                   {CONTRACT_ADDRESS}
