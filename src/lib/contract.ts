@@ -120,7 +120,14 @@ export const readPublicState = async (): Promise<PublicState | null> => {
  *                  storage so two wallets in one browser stay isolated.
  */
 export const connectToContract = async (api: ConnectedAPI, accountId: string) => {
-  const zkConfigProvider = new FetchZkConfigProvider<typeof CIRCUIT_ID>(ZK_CONFIG_BASE_URL);
+  // The constructor's default fetchFunc is cross-fetch's re-export of
+  // window.fetch — a detached reference the provider invokes as
+  // `this.fetchFunc(...)`, which throws "Illegal invocation" in browsers.
+  // Passing an explicitly window-bound fetch keeps the required this-binding.
+  const zkConfigProvider = new FetchZkConfigProvider<typeof CIRCUIT_ID>(
+    ZK_CONFIG_BASE_URL,
+    window.fetch.bind(window),
+  );
   const walletProvider = await createDAppConnectorWalletProvider(api);
 
   const providers = {
