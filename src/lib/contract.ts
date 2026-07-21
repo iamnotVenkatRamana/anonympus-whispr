@@ -18,6 +18,7 @@ import { dappConnectorProofProvider } from '@midnight-ntwrk/midnight-js-dapp-con
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
+import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-js';
 import { CostModel } from '@midnight-ntwrk/midnight-js-protocol/ledger';
 
@@ -30,6 +31,14 @@ import { createDAppConnectorWalletProvider } from './dapp-connector-wallet-provi
  * network reference in this app must match.
  */
 export const NETWORK_ID = 'preview';
+
+// The ledger WASM reads a process-global network id when serializing
+// transactions; nothing in the browser path sets it (the Node path gets it
+// from setNetworkId in src/wallet.ts, which never runs here). Without this,
+// submit fails with "Network ID has not been configured" — the read path
+// survives only because indexer GraphQL queries never touch that global.
+// Module scope so it runs once, before any wallet or contract operation.
+setNetworkId(NETWORK_ID);
 
 /** Address of the Level 1 deployment on Preview. */
 export const CONTRACT_ADDRESS =
