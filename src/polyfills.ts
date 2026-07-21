@@ -6,7 +6,7 @@
  * global, which browsers don't provide. The `buffer` npm package (already a
  * transitive dependency) is the standard drop-in.
  *
- * This lives in its own module — imported first from src/main.tsx — because
+ * This lives in its own module, imported first from src/main.tsx, because
  * ES import hoisting evaluates a module's entire import graph before its own
  * statements run. An inline assignment in main.tsx would execute after every
  * SDK module had already initialized.

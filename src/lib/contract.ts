@@ -35,7 +35,7 @@ export const NETWORK_ID = 'preview';
 // The ledger WASM reads a process-global network id when serializing
 // transactions; nothing in the browser path sets it (the Node path gets it
 // from setNetworkId in src/wallet.ts, which never runs here). Without this,
-// submit fails with "Network ID has not been configured" — the read path
+// submit fails with "Network ID has not been configured"; the read path
 // survives only because indexer GraphQL queries never touch that global.
 // Module scope so it runs once, before any wallet or contract operation.
 setNetworkId(NETWORK_ID);
@@ -68,7 +68,7 @@ const ZK_CONFIG_BASE_URL = `${window.location.origin}/zk/anonymous-whispers`;
  * chars, 3 of 4 character classes, no runs, no sequential patterns).
  *
  * This contract declares no witnesses, so its private state is permanently
- * `{}` — there is nothing secret in this store to protect. A real secret would
+ * `{}`: there is nothing secret in this store to protect. A real secret would
  * be required the moment a witness is added.
  */
 const PRIVATE_STATE_PASSWORD = 'Frontend-Devnet-Development-Placeholder-1';
@@ -76,7 +76,7 @@ const PRIVATE_STATE_PASSWORD = 'Frontend-Devnet-Development-Placeholder-1';
 const compiledContract = CompiledContract.make('anonymous-whispers', Contract).pipe(
   CompiledContract.withVacantWitnesses,
   // Resolved relative to the ZK config provider's base, so this is the path
-  // segment under public/zk — not a filesystem path as it is in deploy.ts.
+  // segment under public/zk, not a filesystem path as it is in deploy.ts.
   CompiledContract.withCompiledFileAssets('anonymous-whispers'),
 );
 
@@ -84,7 +84,7 @@ const compiledContract = CompiledContract.make('anonymous-whispers', Contract).p
  * The third argument is not optional in practice, despite its type.
  *
  * The provider defaults `webSocketImpl` to `ws.WebSocket` from `isomorphic-ws`,
- * whose browser build exports no such named binding — so the default resolves to
+ * whose browser build exports no such named binding, so the default resolves to
  * `undefined` and every subscription (which is how the SDK waits for a
  * transaction to be included) fails. The browser's native WebSocket is the
  * correct implementation here; the Node paths in src/deploy.ts and src/cli.ts
@@ -124,13 +124,13 @@ export const readPublicState = async (): Promise<PublicState | null> => {
 /**
  * Assembles the providers and resolves the deployed contract.
  *
- * @param api The connected wallet — the object `InitialAPI.connect()` returned.
+ * @param api The connected wallet: the object `InitialAPI.connect()` returned.
  * @param accountId The wallet's unshielded address, used to scope private-state
  *                  storage so two wallets in one browser stay isolated.
  */
 export const connectToContract = async (api: ConnectedAPI, accountId: string) => {
   // The constructor's default fetchFunc is cross-fetch's re-export of
-  // window.fetch — a detached reference the provider invokes as
+  // window.fetch, a detached reference the provider invokes as
   // `this.fetchFunc(...)`, which throws "Illegal invocation" in browsers.
   // Passing an explicitly window-bound fetch keeps the required this-binding.
   const zkConfigProvider = new FetchZkConfigProvider<typeof CIRCUIT_ID>(

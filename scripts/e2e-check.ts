@@ -53,7 +53,7 @@ async function main() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const zkConfigPath = path.resolve(__dirname, '..', 'contracts', 'managed', 'anonymous-whispers');
   const contractPath = path.join(zkConfigPath, 'contract', 'index.js');
-  if (!fs.existsSync(contractPath)) fail('Compiled contract missing — run `npm run compile`.');
+  if (!fs.existsSync(contractPath)) fail('Compiled contract missing: run `npm run compile`.');
   const HelloWorld = await import(pathToFileURL(contractPath).href);
   const compiledContract = CompiledContract.make('anonymous-whispers', HelloWorld.Contract).pipe(
     CompiledContract.withVacantWitnesses,
@@ -62,7 +62,7 @@ async function main() {
 
   const walletCtx = await createWallet({ network, networkConfig, seed: SEED });
   await walletCtx.wallet.waitForSyncedState();
-  // Persist the sync state — saves time on the next e2e-check invocation in CI
+  // Persist the sync state, which saves time on the next e2e-check invocation in CI
   // when run against the same persistent wallet directory.
   await persistWalletState(network, walletCtx);
 
@@ -84,7 +84,7 @@ async function main() {
       privateStateStoreName: 'anonymous-whispers-state',
       accountId: walletCtx.unshieldedKeystore.getBech32Address().toString(),
       // SDK requires ≥16 chars. e2e-check is read-only so we don't expose
-      // the env-var override here — match the deploy script's local-devnet default.
+      // the env-var override here; match the deploy script's local-devnet default.
       privateStoragePasswordProvider: () => 'Local-Devnet-Development-Placeholder-1',
     }),
     publicDataProvider: indexerPublicDataProvider(networkConfig.indexer, networkConfig.indexerWS),
@@ -94,7 +94,7 @@ async function main() {
     midnightProvider: walletProvider,
   };
 
-  // 3. Reconnect to the deployed contract — proves callTx interface is wired
+  // 3. Reconnect to the deployed contract; proves callTx interface is wired
   try {
     await findDeployedContract(providers, {
       contractAddress: deployment.address,
@@ -107,7 +107,7 @@ async function main() {
     fail(`findDeployedContract threw: ${err?.message ?? err}`);
   }
 
-  // 4. Read the on-chain contract state via the public data provider — proves
+  // 4. Read the on-chain contract state via the public data provider; proves
   // the contract is indexed and queryable on the chain itself, not just that
   // we know how to construct the local handle.
   const onChainState = await providers.publicDataProvider.queryContractState(deployment.address);

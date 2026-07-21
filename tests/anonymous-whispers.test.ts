@@ -1,5 +1,5 @@
 /**
- * Anonymous Whispers — local, offline test suite.
+ * Anonymous Whispers: local, offline test suite.
  *
  * These tests exercise the *real* compiled Compact circuit
  * (contracts/managed/anonymous-whispers) using the Midnight compact-runtime.
@@ -7,10 +7,10 @@
  * anywhere `npm test` is invoked.
  *
  * What we prove:
- *   1. Circuit logic      — submit_report executes successfully and returns proof data.
- *   2. State transitions  — the report counter increments and the disclosed hash
+ *   1. Circuit logic      - submit_report executes successfully and returns proof data.
+ *   2. State transitions  - the report counter increments and the disclosed hash
  *                           is stored in the public ledger.
- *   3. Privacy validation — the private witness (report_content) is NEVER written
+ *   3. Privacy validation - the private witness (report_content) is NEVER written
  *                           to the public ledger state.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -63,7 +63,7 @@ beforeAll(() => {
   );
 });
 
-describe('Anonymous Whispers — submit_report circuit', () => {
+describe('Anonymous Whispers: submit_report circuit', () => {
   // ── TEST 1: Circuit logic ──────────────────────────────────────────────────
   it('executes submit_report and produces proof data without throwing', () => {
     const results = contract.circuits.submit_report(

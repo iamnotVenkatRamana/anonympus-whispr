@@ -1,12 +1,12 @@
 // Wallet sync-state persistence.
 //
 // Mirrors network.ts: no template substitutions, all I/O via function
-// parameters, no SDK imports — keeps the module unit-testable from the
+// parameters, no SDK imports; keeps the module unit-testable from the
 // create-mn-app workspace (which doesn't install @midnight-ntwrk/* packages).
 //
 // Why: without persistence, every `npm run deploy` / `npm run cli` rebuilds
 // each child wallet from seed and re-syncs against the chain. On public
-// networks (preview, preprod) that's minutes per run — and painful on retries
+// networks (preview, preprod) that's minutes per run, and painful on retries
 // after a transient failure. The SDK exposes serializeState() and restore()
 // on each child wallet class; wallet.ts is the glue that uses them, and this
 // file is the on-disk format underneath.
@@ -61,7 +61,7 @@ function readVersionedState<T>(file: string): T | undefined {
     }
     return parsed.state;
   } catch {
-    // Corrupt file — caller falls back to from-seed sync; we'll overwrite on save.
+    // Corrupt file: caller falls back to from-seed sync; we'll overwrite on save.
     return undefined;
   }
 }

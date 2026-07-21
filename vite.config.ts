@@ -7,7 +7,7 @@ export default defineConfig({
   // Note on WASM: @midnight-ntwrk/ledger-v8 ships wasm-bindgen output built for
   // the "bundler" target (`import * as wasm from './..._bg.wasm'`). Vite 8
   // handles that natively and emits the .wasm as an asset. Do NOT add
-  // vite-plugin-wasm — layering it on top of the native handling crashes the
+  // vite-plugin-wasm: layering it on top of the native handling crashes the
   // build with a SIGBUS (verified against vite 8.1.5).
   optimizeDeps: {
     // Pre-bundling ledger-v8 breaks it. The wasm-bindgen glue does

@@ -36,7 +36,7 @@ import { fromHex, toHex } from '@midnight-ntwrk/midnight-js-utils';
 
 /**
  * `MidnightProviders` takes `walletProvider` and `midnightProvider` separately,
- * but a single object can satisfy both — which is what src/deploy.ts does too.
+ * but a single object can satisfy both, which is what src/deploy.ts does too.
  */
 export type DAppConnectorWalletProvider = WalletProvider & MidnightProvider;
 
@@ -52,12 +52,12 @@ export type DAppConnectorWalletAPI = Pick<
 /**
  * Builds the wallet provider for a connected wallet.
  *
- * This is async — and has to be — because `WalletProvider.getCoinPublicKey` and
+ * This is async (and has to be) because `WalletProvider.getCoinPublicKey` and
  * `getEncryptionPublicKey` are *synchronous*, while the only way to obtain those
  * keys from the connector (`getShieldedAddresses`) is a promise. So the keys are
  * fetched once here and closed over, rather than fetched per call.
  *
- * @param api The object returned by `InitialAPI.connect()` — never the
+ * @param api The object returned by `InitialAPI.connect()`, never the
  *            `InitialAPI` itself, which has none of these methods.
  */
 export const createDAppConnectorWalletProvider = async (
@@ -84,7 +84,7 @@ export const createDAppConnectorWalletProvider = async (
     async balanceTx(tx: UnboundTransaction): Promise<FinalizedTransaction> {
       const { tx: balanced } = await api.balanceUnsealedTransaction(toHex(tx.serialize()));
       // The wallet returns a sealed transaction: signatures, proofs, and
-      // binding all applied — hence the 'binding' marker rather than the
+      // binding all applied, hence the 'binding' marker rather than the
       // 'pre-binding' the input carried.
       return Transaction.deserialize('signature', 'proof', 'binding', fromHex(balanced));
     },
