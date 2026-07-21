@@ -1,3 +1,6 @@
+// Must stay the first import: see the note inside about evaluation order.
+import './polyfills';
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
