@@ -3,6 +3,7 @@
  */
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
+import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -26,6 +27,9 @@ globalThis.WebSocket = WebSocket;
 // Must match the privateStateId used at deploy time so the CLI reconnects to
 // the same private state. The anonymous-whispers contract has no witnesses (empty state).
 const PRIVATE_STATE_ID = 'anonymousWhispersPrivateState';
+
+// submit_report's report_content argument is Bytes<256> — a fixed-width field.
+const REPORT_CONTENT_BYTES = 256;
 
 const { network, config: networkConfig } = resolveNetwork();
 const SEED = getOrCreateSeed(network);
@@ -165,8 +169,8 @@ async function main() {
     let running = true;
     while (running) {
       console.log('─── Menu ───────────────────────────────────────────────────────');
-      console.log('  1. Store a message');
-      console.log('  2. Read current message');
+      console.log('  1. Submit an anonymous report');
+      console.log('  2. Read public state (counter + latest report hash)');
       console.log('  3. Check wallet balance');
       console.log('  4. Exit\n');
 
@@ -174,11 +178,28 @@ async function main() {
 
       switch (choice.trim()) {
         case '1': {
-          const message = await rl.question('  Enter your message: ');
+          const reportText = await rl.question('  Enter your report: ');
+          // The circuit takes a fixed-width Bytes<256> witness, so the text is
+          // truncated or zero-padded to exactly 256 bytes before hashing. The
+          // hash must be taken over the padded buffer — that is what the
+          // circuit sees.
+          const reportContentBytes = new Uint8Array(REPORT_CONTENT_BYTES);
+          const encoded = Buffer.from(reportText, 'utf-8');
+          reportContentBytes.set(encoded.subarray(0, REPORT_CONTENT_BYTES));
+          const contentHash = new Uint8Array(
+            createHash('sha256').update(reportContentBytes).digest(),
+          );
+
+          if (encoded.length > REPORT_CONTENT_BYTES) {
+            console.log(`\n  ⚠ Report truncated to ${REPORT_CONTENT_BYTES} bytes.`);
+          }
+
           console.log('\n  Submitting transaction (this may take 30-60 seconds)...');
           try {
-            const tx = await deployed.callTx.storeMessage(message);
-            console.log(`\n  ✅ Message stored: "${message}"`);
+            const tx = await deployed.callTx.submit_report(contentHash, reportContentBytes);
+            const hashHex = Buffer.from(contentHash).toString('hex');
+            console.log(`\n  ✅ Report submitted (hash: ${hashHex})`);
+            console.log('  The report text itself was never published — only this hash is on-chain.');
             console.log(`  Transaction ID: ${tx.public.txId}`);
             console.log(`  Block height: ${tx.public.blockHeight}\n`);
           } catch (error) {
@@ -188,15 +209,17 @@ async function main() {
         }
 
         case '2': {
-          console.log('\n  Reading message from blockchain...');
+          console.log('\n  Reading public state from blockchain...');
           try {
             const contractState = await providers.publicDataProvider.queryContractState(deployment.address);
             if (contractState) {
-              const ledgerState = HelloWorld.ledger(contractState.data);
-              const message = Buffer.from(ledgerState.message).toString();
-              console.log(`\n  📋 Current message: "${message}"\n`);
+              const ledgerState = AnonymousWhispers.ledger(contractState.data);
+              const latestHash = Buffer.from(ledgerState.latest_report_hash).toString('hex');
+              console.log(`\n  📋 Reports submitted (counter): ${ledgerState.counter}`);
+              console.log(`  📋 Latest report hash: ${latestHash}`);
+              console.log('  ℹ  Report contents are never stored on-chain, so they cannot be read back.\n');
             } else {
-              console.log('\n  📋 No message found (contract state empty)\n');
+              console.log('\n  📋 No contract state found at this address\n');
             }
           } catch (error) {
             console.error('\n  ❌ Failed:', error instanceof Error ? error.message : error);

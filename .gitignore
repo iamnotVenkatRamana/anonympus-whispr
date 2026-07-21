@@ -15,8 +15,8 @@ build/
 .env.test.local
 .env.production.local
 
-# Contract artifacts
-contracts/managed/
+# Contract artifacts (contracts/managed/ is committed on purpose so reviewers
+# can see the compiled circuit, keys, and ZKIR without recompiling)
 
 # Deployment info
 deployment.json

@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.js",
+  "sourceRoot": "../../../../",
+  "sources": ["contracts/anonymous-whispers.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAAA;;;;;;;;;;MA+DA,AAAA,aAmBC;;;;;cAlBG,cAAuB;cACvB,gBAA0B;;;;;;;;;;;;;;;;;;;;;;;;;yCAD1B,cAAuB,+BACvB,gBAA0B;;;;;;;;;+CAD1B,cAAuB;+CACvB,gBAA0B;;;OAiB7B;;;;GACA;EAnFD;;;;;;;;;;;;;;;;;;;;;;;;;;;IAyBA;;;;;;;;;yEAA+B;IAK/B;;;;;;;;;yEAA4C;;;;;;;GAqD3C;EApBD,AAAA,gBAmBC,4BAlBG,cAAuB,EACvB,gBAA0B;;IAY1B;;;;;;;2HAA8B,cAAY;;yEAAxB;UAIlB,KAAO;IAAP;;;;;;;;;;6FAAA,KAAO;;;;wEAAA;;GACV;;;;;;;;;;;;;;;;IAzDD;qCAAA;;;;;;;;;;;0GAA+B;KAAA;IAK/B;qCAAA;;;;;;;;;;;0GAA4C;KAAA;;;;;;;;;;"
+}
