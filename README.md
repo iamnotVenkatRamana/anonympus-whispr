@@ -122,7 +122,9 @@ Lace wallet.
 
 ## Demo Video
 
-[Video link will be added after recording.]
+Watch the demo: https://youtu.be/1C2ypyz2Qoc
+
+The video shows the full flow: connecting Lace on Preview, submitting an anonymous report, watching the zero-knowledge proof generate locally, and verifying the on-chain hash while the report content is never revealed.
 
 ## Level 1 (Contract Deployment)
 
