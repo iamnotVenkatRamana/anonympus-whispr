@@ -33,6 +33,9 @@ public counter of total reports. The actual report content never leaves the
 browser. It is dropped from memory the moment proving begins, and there is no
 code path that could transmit, store, or log it.
 
+This submission is phase 1: the privacy primitive. The full two-way encrypted
+reporting system is described under Vision and Roadmap below.
+
 ## Privacy Model
 
 What is PUBLIC:
@@ -58,6 +61,32 @@ An on-chain observer sees which wallet submitted a report and when, and the
 hash of the content, but cannot recover the content itself. Not from us, not
 from Midnight, not from anyone. The only way for content to become known is if
 the submitter chooses to share it.
+
+## Vision and Roadmap
+
+The end goal for Anonymous Whispers is a two-way anonymous reporting system
+for organizations. Workers, customers, or stakeholders submit reports that
+only a designated recipient can read: the head of an org, a compliance
+officer, an ombudsperson. Even that recipient cannot identify who submitted.
+
+Level 2 delivers phase 1, the privacy primitive. A submitter proves they
+submitted content whose SHA-256 hash matches a published value, without
+revealing the content. Only the hash and a counter live on-chain, and the
+content is destroyed once proving begins.
+
+Phase 2 (planned) extends the contract to accept an encrypted payload. The
+recipient's public key is registered on-chain, submitters encrypt their report
+to that key, and the ciphertext is stored publicly on Midnight. The recipient
+decrypts client-side with their private key, and the submitter stays anonymous
+even to the recipient.
+
+Building blocks for phase 2:
+
+- Asymmetric encryption, likely curve25519 or similar.
+- Possibly threshold decryption for multi-party recipient scenarios, such as
+  an organization's board rather than a single individual.
+- A recipient viewer frontend where the org signs in with their private key
+  and reads a decrypted queue of submissions.
 
 ## Tech Stack
 
