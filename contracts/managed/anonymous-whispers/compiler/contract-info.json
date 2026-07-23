@@ -28,6 +28,51 @@
         "types": [
         ]
       }
+    },
+    {
+      "name": "register_recipient",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "new_public_key",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "submit_encrypted_report",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "ciphertext",
+          "type": {
+            "type-name": "Bytes",
+            "length": 512
+          }
+        },
+        {
+          "name": "ciphertext_hash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
     }
   ],
   "witnesses": [
@@ -49,6 +94,32 @@
       "type": {
         "type-name": "Bytes",
         "length": 32
+      }
+    },
+    {
+      "name": "recipient_public_key",
+      "index": 2,
+      "exported": true,
+      "storage": "Cell",
+      "type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "recipient_key_version",
+      "index": 3,
+      "exported": true,
+      "storage": "Counter"
+    },
+    {
+      "name": "ciphertexts",
+      "index": 4,
+      "exported": true,
+      "storage": "List",
+      "type": {
+        "type-name": "Bytes",
+        "length": 512
       }
     }
   ]

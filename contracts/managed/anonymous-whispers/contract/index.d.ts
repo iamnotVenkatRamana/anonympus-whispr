@@ -7,12 +7,22 @@ export type ImpureCircuits<PS> = {
   submit_report(context: __compactRuntime.CircuitContext<PS>,
                 content_hash_0: Uint8Array,
                 report_content_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  register_recipient(context: __compactRuntime.CircuitContext<PS>,
+                     new_public_key_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  submit_encrypted_report(context: __compactRuntime.CircuitContext<PS>,
+                          ciphertext_0: Uint8Array,
+                          ciphertext_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type ProvableCircuits<PS> = {
   submit_report(context: __compactRuntime.CircuitContext<PS>,
                 content_hash_0: Uint8Array,
                 report_content_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  register_recipient(context: __compactRuntime.CircuitContext<PS>,
+                     new_public_key_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  submit_encrypted_report(context: __compactRuntime.CircuitContext<PS>,
+                          ciphertext_0: Uint8Array,
+                          ciphertext_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type PureCircuits = {
@@ -22,11 +32,24 @@ export type Circuits<PS> = {
   submit_report(context: __compactRuntime.CircuitContext<PS>,
                 content_hash_0: Uint8Array,
                 report_content_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  register_recipient(context: __compactRuntime.CircuitContext<PS>,
+                     new_public_key_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  submit_encrypted_report(context: __compactRuntime.CircuitContext<PS>,
+                          ciphertext_0: Uint8Array,
+                          ciphertext_hash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
 }
 
 export type Ledger = {
   readonly counter: bigint;
   readonly latest_report_hash: Uint8Array;
+  readonly recipient_public_key: Uint8Array;
+  readonly recipient_key_version: bigint;
+  ciphertexts: {
+    isEmpty(): boolean;
+    length(): bigint;
+    head(): { is_some: boolean, value: Uint8Array };
+    [Symbol.iterator](): Iterator<Uint8Array>
+  };
 }
 
 export type ContractReferenceLocations = any;
