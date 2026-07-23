@@ -173,11 +173,15 @@ contract address.
 
 ## Demo Video
 
-Watch the Level 2 demo: https://youtu.be/1C2ypyz2Qoc
+Watch the Level 3 demo: [PASTE NEW YOUTUBE URL]
 
-The video shows the full flow: connecting Lace, submitting an anonymous
-report, watching the zero-knowledge proof generate locally, and verifying the
-on-chain hash while the report content is never revealed.
+The video shows the full two-way flow: an organization generates a recipient
+keypair and registers the public key on-chain, a reporter verifies that key,
+encrypts a report to it, and submits it, and the organization decrypts the
+submission client-side in the inbox. It also shows the test suite passing and
+the CI pipeline green.
+
+Level 2 demo (single-direction hash submission): https://youtu.be/1C2ypyz2Qoc
 
 ## Level 1 (Contract Deployment)
 
