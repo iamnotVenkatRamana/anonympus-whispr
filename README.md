@@ -12,12 +12,13 @@
 
 | Network | Level | Address |
 |---------|-------|---------|
-| Preprod | 3 | pending deploy: run `npm run deploy -- --network preprod` |
+| Preview | 3 | `ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e` |
 | Preview | 1-2 | `5f4f45e862ad11072d41a4aace8589f51248e0766510b431cab44c1825394ff0` |
 
-Levels 1 and 2 were deployed to Preview because Preprod was unavailable during
-that challenge period (confirmed by the Midnight team). Preprod recovered and
-was verified healthy on 2026-07-23, so Level 3 targets Preprod.
+Both Level 2 and Level 3 use Preview rather than Preprod. During the Level 2
+build period Preprod was unavailable, and during the Level 3 build period its
+indexer was lagging intermittently; both issues were confirmed by the Midnight
+team. Preview remained healthy throughout, so all deployments target Preview.
 
 ## New in Level 3
 
@@ -112,7 +113,7 @@ feasibility analysis, is in [PROPOSAL.md](./PROPOSAL.md).
 
 ## Tech Stack
 
-- Midnight Network (Preprod)
+- Midnight Network (Preview)
 - Compact language
 - Midnight.js SDK 4.1.x
 - tweetnacl (curve25519-xsalsa20-poly1305)
@@ -124,10 +125,10 @@ feasibility analysis, is in [PROPOSAL.md](./PROPOSAL.md).
 
 ## Prerequisites
 
-- Lace wallet browser extension installed and set to the Preprod network
-- Preprod tNIGHT balance funded from
-  [https://midnight-tmnight-preprod.nethermind.dev](https://midnight-tmnight-preprod.nethermind.dev)
-- Preprod tDUST auto-generates from tNIGHT (allow a few minutes after funding)
+- Lace wallet browser extension installed and set to the Preview network
+- Preview tNIGHT balance funded from
+  [https://midnight-tmnight-preview.nethermind.dev](https://midnight-tmnight-preview.nethermind.dev)
+- Preview tDUST auto-generates from tNIGHT (allow a few minutes after funding)
 - For local development: Node.js v22+, npm
 
 ## Run Locally
@@ -145,7 +146,7 @@ Then open http://localhost:5173. The landing page offers both entry points:
 - `/inbox` is the organization view: register as recipient and read
   decrypted submissions.
 
-Connect Lace (Preprod) on either view to transact. The frontend needs no proof
+Connect Lace (Preview) on either view to transact. The frontend needs no proof
 server and no Docker: proving happens inside the Lace wallet.
 
 ## Run Tests
@@ -183,12 +184,20 @@ on-chain hash while the report content is never revealed.
 Level 1 (the Compact contract and backend deployment) is complete and
 reviewed. The contract source is at `contracts/anonymous-whispers.compact` and
 the deployment CLI is at `src/cli.ts` (run with `npm run cli`). The offline
-test suite runs with `npm test`, and `npm run deploy -- --network preprod`
+test suite runs with `npm test`, and `npm run deploy -- --network preview`
 deploys a fresh instance against a local proof server
 (`npm run proof-server:start`).
 
 ## Screenshots
 
-![Compile Output](./compile.png)
+Level 3 contract compile (three circuits):
 
-![Deploy Output](./deploy.png)
+![Level 3 Compile Output](./compile-level3.png)
+
+Level 3 deployment to Preview:
+
+![Level 3 Deploy Output](./deploy-level3.png)
+
+Level 3 test suite (circuits plus encryption layer):
+
+![Level 3 Test Output](./tests-level3.png)
