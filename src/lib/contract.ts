@@ -26,11 +26,11 @@ import { Contract, ledger } from '../../contracts/managed/anonymous-whispers/con
 import { createDAppConnectorWalletProvider } from './dapp-connector-wallet-provider';
 
 /**
- * Level 3 targets Preprod (indexer verified healthy on 2026-07-23). The Level
- * 1/2 deployment remains on Preview at
- * 5f4f45e862ad11072d41a4aace8589f51248e0766510b431cab44c1825394ff0.
+ * Level 3 targets Preview (the Preprod indexer is lagging again, confirmed by
+ * the Midnight team on 2026-07-23). The Level 1/2 deployment is also on
+ * Preview at 5f4f45e862ad11072d41a4aace8589f51248e0766510b431cab44c1825394ff0.
  */
-export const NETWORK_ID = 'preprod';
+export const NETWORK_ID = 'preview';
 
 // The ledger WASM reads a process-global network id when serializing
 // transactions; nothing in the browser path sets it (the Node path gets it
@@ -41,17 +41,14 @@ export const NETWORK_ID = 'preprod';
 setNetworkId(NETWORK_ID);
 
 /**
- * Address of the Level 3 deployment on Preprod.
- *
- * PLACEHOLDER: still the Level 1 Preview address. Replace with the output of
- * `npm run deploy -- --network preprod` (also recorded in
- * .midnight-state.json under deployments.preprod).
+ * Address of the Level 3 deployment on Preview (deployed 2026-07-23, also
+ * recorded in .midnight-state.json under deployments.preview).
  */
 export const CONTRACT_ADDRESS =
-  '5f4f45e862ad11072d41a4aace8589f51248e0766510b431cab44c1825394ff0';
+  'ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e';
 
-const INDEXER_URI = 'https://indexer.preprod.midnight.network/api/v4/graphql';
-const INDEXER_WS_URI = 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';
+const INDEXER_URI = 'https://indexer.preview.midnight.network/api/v4/graphql';
+const INDEXER_WS_URI = 'wss://indexer.preview.midnight.network/api/v4/graphql/ws';
 
 /** Matches PRIVATE_STATE_ID in src/deploy.ts and src/cli.ts. */
 const PRIVATE_STATE_ID = 'anonymousWhispersPrivateState';
