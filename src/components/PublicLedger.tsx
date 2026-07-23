@@ -53,7 +53,14 @@ export function PublicLedger({ refreshToken }: Props) {
 
       {error && (
         <p className="mt-5 text-base text-warn">
-          Could not reach the Preview indexer. {error}
+          Could not reach the indexer. {error}
+        </p>
+      )}
+
+      {!loading && !error && state === null && (
+        <p className="mt-5 text-base text-muted">
+          Contract not found on this network yet. It appears here once the Level 3
+          deployment lands.
         </p>
       )}
 

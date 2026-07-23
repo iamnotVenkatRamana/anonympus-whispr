@@ -23,12 +23,39 @@ import CompactStandardLibrary;
 //   * counter         - how many reports have been submitted (aggregate stats)
 //   * latest_report_hash - a 32-byte SHA-256 commitment to the latest report
 // Neither reveals any whistleblower identity or report contents.
+//
+// Level 3 additions (two-way encrypted flow):
+//   * recipient_public_key   - curve25519 public key of the registered
+//                              recipient (all zeros until registered)
+//   * recipient_key_version  - bumps on every registration so reporters can
+//                              detect key changes
+//   * ciphertexts            - append-only list of encrypted submissions;
+//                              publicly readable, decryptable only by the
+//                              holder of the matching secret key
 export ledger counter: Counter;
 
 // 32-byte commitment (hash) of the most recently submitted report.
 // Public so anyone can verify a report was recorded, but the content stays
 // hidden because a hash is one-way and cannot be reversed into the content.
 export ledger latest_report_hash: Bytes<32>;
+
+// Curve25519 (nacl.box) public key of the organization's inbox. Zero-value
+// means "no recipient registered yet". Publishing it is safe: a public key
+// only lets people encrypt TO the recipient, never read anything.
+export ledger recipient_public_key: Bytes<32>;
+
+// Incremented every time recipient_public_key is overwritten. Reporters can
+// pin the version they encrypted against and detect a key rotation or a
+// hostile overwrite (access control on registration is a Level 4 concern,
+// documented in PROPOSAL.md).
+export ledger recipient_key_version: Counter;
+
+// Append-only list of encrypted submissions. Each entry is a fixed 512-byte
+// envelope: ephemeral sender public key (32) || nonce (24) || box ciphertext
+// of the padded 256-byte report (272) || zero padding (184). The envelope is
+// public; the content is unreadable without the recipient's secret key, which
+// never leaves the recipient's browser.
+export ledger ciphertexts: List<Bytes<512>>;
 
 // ----------------------------------------------------------------------------
 // PRIVATE WITNESS
@@ -79,5 +106,53 @@ export circuit submit_report(
 
     // PUBLIC: increment the aggregate report counter (by 1) so the world can
     // see how many reports have been submitted without seeing any of them.
+    counter.increment(1);
+}
+
+// ----------------------------------------------------------------------------
+// CIRCUIT: register_recipient (Level 3)
+// ----------------------------------------------------------------------------
+// Publishes the organization's curve25519 public key so reporters can encrypt
+// submissions to it. Level 3 deliberately allows ANY caller to overwrite the
+// key; the version counter makes an overwrite detectable by reporters who
+// pinned an earlier version. Access control (owner-only rotation) is scoped
+// to Level 4 and discussed in PROPOSAL.md.
+export circuit register_recipient(new_public_key: Bytes<32>): [] {
+    // PUBLIC: a public key is safe to disclose by construction. It enables
+    // encryption toward the recipient and nothing else.
+    recipient_public_key = disclose(new_public_key);
+
+    // PUBLIC: version bump so clients can detect key changes.
+    recipient_key_version.increment(1);
+}
+
+// ----------------------------------------------------------------------------
+// CIRCUIT: submit_encrypted_report (Level 3)
+// ----------------------------------------------------------------------------
+// Inputs:
+//   ciphertext      : Bytes<512> - the fixed-size encrypted envelope
+//                     (ephemeral public key || nonce || nacl.box ciphertext ||
+//                     zero padding). Disclosed on purpose: it is unreadable
+//                     without the recipient's secret key.
+//   ciphertext_hash : Bytes<32>  - SHA-256 of the envelope, computed by the
+//                     caller. Stored in latest_report_hash to preserve the
+//                     Level 1/2 auditability model: anyone can re-hash the
+//                     public ciphertext and verify the commitment matches.
+//
+// The plaintext report NEVER appears here. Encryption happens entirely in the
+// reporter's browser before this circuit is invoked, so the chain only ever
+// carries bytes that are indistinguishable from random without the key.
+export circuit submit_encrypted_report(
+    ciphertext: Bytes<512>,
+    ciphertext_hash: Bytes<32>
+): [] {
+    // PUBLIC: append the sealed envelope to the inbox list.
+    ciphertexts.pushFront(disclose(ciphertext));
+
+    // PUBLIC: commitment to the envelope for auditability, mirroring the
+    // Level 1 hash model.
+    latest_report_hash = disclose(ciphertext_hash);
+
+    // PUBLIC: same aggregate counter as the legacy flow.
     counter.increment(1);
 }

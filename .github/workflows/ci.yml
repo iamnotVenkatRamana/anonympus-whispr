@@ -1,0 +1,58 @@
+# CI for Anonymous Whispers.
+#
+# Compiles the Compact contract from source on every run (the toolchain has no
+# Windows build, so CI is also the reference compile environment), then type
+# checks, tests, and builds the frontend.
+#
+# Deliberately absent: `npm run deploy`. Deploying from CI would spend real
+# tDUST and change the live contract address on every push.
+name: CI
+
+on:
+  push:
+    branches: [main, level-3]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: node-modules-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Install Compact toolchain
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/midnightntwrk/compact/releases/latest/download/compact-installer.sh | sh
+          echo "$HOME/.compact/bin" >> "$GITHUB_PATH"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Update Compact toolchain
+        run: compact update
+
+      - name: Compile contract
+        run: npm run compile
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Test
+        run: npm run test
+
+      - name: Build frontend
+        run: npm run build:web
