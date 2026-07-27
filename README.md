@@ -173,7 +173,7 @@ contract address.
 
 ## Demo Video
 
-Watch the Level 3 demo: [PASTE NEW YOUTUBE URL]
+Watch the Level 3 demo: https://youtu.be/kaJV-b_whmM
 
 The video shows the full two-way flow: an organization generates a recipient
 keypair and registers the public key on-chain, a reporter verifies that key,
