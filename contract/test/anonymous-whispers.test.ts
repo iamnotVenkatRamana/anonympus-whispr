@@ -25,7 +25,7 @@ import {
 } from '@midnight-ntwrk/compact-runtime';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const zkConfigPath = path.resolve(__dirname, '..', 'contracts', 'managed', 'anonymous-whispers');
+const zkConfigPath = path.resolve(__dirname, '..', 'managed', 'anonymous-whispers');
 const contractUrl = pathToFileURL(path.join(zkConfigPath, 'contract', 'index.js')).href;
 
 // Load the compiled contract dynamically (plain JS emitted by `compact compile`).
