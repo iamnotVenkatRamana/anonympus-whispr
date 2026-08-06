@@ -3,7 +3,7 @@
  *
  * The reporter's world is dark/encrypted (private witness); the on-chain
  * world is light/verifiable (public ledger). No purple, no indigo, no
- * default blue — the one accent is contrast itself. These are plain CSS
+ * default blue. The one accent is contrast itself. These are plain CSS
  * custom properties, not Tailwind @theme colors: Tailwind here is layout and
  * spacing only, so components consume these directly (var(--ink), etc.)
  * rather than through generated utility classes.
@@ -30,6 +30,15 @@
   --font-crypto: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
+/*
+ * The cryptographic layer: hashes, addresses, ciphertext, ledger labels.
+ * Its own class rather than Tailwind's font-mono, which index.css still maps
+ * to the old ink-and-gold stack that /report and /inbox use.
+ */
+.mono {
+  font-family: var(--font-crypto);
+}
+
 .hero-title {
   text-transform: lowercase;
   letter-spacing: -0.04em;
@@ -39,7 +48,7 @@
 /*
  * Global body/type reset for the new landing identity. This runs after
  * index.css's existing "ink and gold" @theme, which /report and /inbox still
- * use verbatim until Phase 4 re-skins them — those pages keep their current
+ * use verbatim until Phase 4 re-skins them. Those pages keep their current
  * color-* utility classes (bg-void, text-bright, ...) unaffected by this
  * block; only the inherited font-family and body background/color change
  * app-wide starting now, per the Phase 2 spec.

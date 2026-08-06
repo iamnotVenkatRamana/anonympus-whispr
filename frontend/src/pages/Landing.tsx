@@ -1,41 +1,50 @@
-import { Link } from 'react-router-dom';
+import { useCallback } from 'react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+import { Hero } from '../components/landing/Hero';
+import { HowItWorks } from '../components/landing/HowItWorks';
+import { PrivacyMorph } from '../components/landing/PrivacyMorph';
+import { StatementBand } from '../components/landing/StatementBand';
+import { TechStripFooter } from '../components/landing/TechStripFooter';
+import { TwoDoors } from '../components/landing/TwoDoors';
+import { useLenis } from '../hooks/useLenis';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 /**
- * Deliberately minimal: a reviewer (or a nervous whistleblower) must find
- * their path in seconds. Two doors, nothing else.
+ * The immersive landing page. Rendered outside the app Shell (see App.tsx):
+ * every section here is full-bleed, and the Shell's centred max-w-3xl column
+ * and wallet header belong to /report and /inbox, not to this page.
  */
 export function Landing() {
-  return (
-    <section className="flex flex-col gap-6">
-      <Link
-        to="/report"
-        className="focus-glow group rounded-2xl border border-edge bg-surface/50 p-10 transition-colors hover:border-signal/40"
-      >
-        <p className="text-sm tracking-[0.25em] text-signal uppercase">For reporters</p>
-        <p className="mt-3 text-2xl font-medium text-bright">I want to submit a report</p>
-        <p className="mt-3 max-w-lg text-base leading-relaxed text-dim">
-          Write your report, encrypt it in your browser to the organization's key, and
-          publish only the sealed envelope. Your identity and your words stay yours.
-        </p>
-        <p className="mt-5 text-sm font-semibold text-signal group-hover:underline">
-          Go to the report form
-        </p>
-      </Link>
+  // `?rm=1` forces the reduced-motion rendering without changing an OS
+  // setting. Kept because the resolved end-state of the privacy morph is
+  // otherwise only reachable by scrolling, which makes it awkward to check.
+  const reducedMotion =
+    useReducedMotion() || new URLSearchParams(window.location.search).has('rm');
+  // Lenis drives the page; ScrollTrigger has to be told when it moves.
+  const lenisRef = useLenis(() => ScrollTrigger.update());
 
-      <Link
-        to="/inbox"
-        className="focus-glow group rounded-2xl border border-edge bg-surface/30 p-10 transition-colors hover:border-signal/40"
-      >
-        <p className="text-sm tracking-[0.25em] text-signal uppercase">For organizations</p>
-        <p className="mt-3 text-2xl font-medium text-bright">I'm an organization</p>
-        <p className="mt-3 max-w-lg text-base leading-relaxed text-dim">
-          Register a recipient key on-chain, then read submissions that only you can
-          decrypt. The secret key never leaves your machine.
-        </p>
-        <p className="mt-5 text-sm font-semibold text-signal group-hover:underline">
-          Go to the inbox
-        </p>
-      </Link>
-    </section>
+  const jumpTo = useCallback(
+    (id: string) => {
+      const target = document.getElementById(id);
+      if (!target) return;
+      // Going through Lenis keeps the jump on the same easing as the wheel.
+      // Without it (reduced motion), native scrolling is already what the
+      // user asked for, so jump instantly rather than smooth-scrolling.
+      if (lenisRef.current) lenisRef.current.scrollTo(target, { offset: 0 });
+      else target.scrollIntoView({ behavior: 'auto', block: 'start' });
+    },
+    [lenisRef],
+  );
+
+  return (
+    <main className="w-full bg-black">
+      <Hero reducedMotion={reducedMotion} onJump={jumpTo} />
+      <StatementBand />
+      <PrivacyMorph reducedMotion={reducedMotion} />
+      <HowItWorks />
+      <TwoDoors />
+      <TechStripFooter />
+    </main>
   );
 }

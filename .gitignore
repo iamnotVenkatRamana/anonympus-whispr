@@ -67,3 +67,5 @@ temp/
 midnight-level-db/
 
 .vercel
+.claude/
+/public/

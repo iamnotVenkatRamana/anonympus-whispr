@@ -57,7 +57,6 @@ function Shell() {
 
         <main className="mt-16 flex flex-col gap-10">
           <Routes>
-            <Route path="/" element={<Landing />} />
             <Route path="/report" element={<Report connection={connection} />} />
             <Route path="/inbox" element={<Inbox connection={connection} />} />
           </Routes>
@@ -93,7 +92,17 @@ function Shell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Shell />
+      {/*
+        The landing page is full-bleed and renders outside the Shell: its hero
+        is a 100vh section and its scroll scenes need the whole viewport, which
+        the Shell's centred max-w-3xl column and wallet header cannot give it.
+        Every other route still goes through the Shell exactly as before, so
+        /report and /inbox keep their persistent wallet connection.
+      */}
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="*" element={<Shell />} />
+      </Routes>
     </BrowserRouter>
   );
 }
