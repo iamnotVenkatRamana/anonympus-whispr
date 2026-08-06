@@ -11,21 +11,24 @@
  *   {base}/keys/{circuitId}.verifier
  *   {base}/zkir/{circuitId}.bzkir
  *
- * which is the same shape compact emits under contracts/managed, so this is a
- * straight directory copy. Run automatically via the predev/prebuild:web hooks.
+ * which is the same shape compact emits under contract/managed, so this is a
+ * straight directory copy. Run automatically via the predev/prebuild:web hooks
+ * in frontend/package.json (this script lives in contract/ but writes into
+ * the sibling frontend/public/ so Vite can serve it).
  */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const contractRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const workspaceRoot = path.resolve(contractRoot, '..');
 const CONTRACT = 'anonymous-whispers';
 
-const src = path.join(root, 'contracts', 'managed', CONTRACT);
-const dest = path.join(root, 'public', 'zk', CONTRACT);
+const src = path.join(contractRoot, 'managed', CONTRACT);
+const dest = path.join(workspaceRoot, 'frontend', 'public', 'zk', CONTRACT);
 
 if (!fs.existsSync(src)) {
-  console.error(`\n❌ ${path.relative(root, src)} not found. Run: npm run compile\n`);
+  console.error(`\n❌ ${path.relative(contractRoot, src)} not found. Run: npm run compile (in contract/)\n`);
   process.exit(1);
 }
 
@@ -33,7 +36,7 @@ let copied = 0;
 for (const dir of ['keys', 'zkir']) {
   const from = path.join(src, dir);
   if (!fs.existsSync(from)) {
-    console.error(`\n❌ Missing ${path.relative(root, from)}. Run: npm run compile\n`);
+    console.error(`\n❌ Missing ${path.relative(contractRoot, from)}. Run: npm run compile (in contract/)\n`);
     process.exit(1);
   }
   const to = path.join(dest, dir);
@@ -47,4 +50,4 @@ for (const dir of ['keys', 'zkir']) {
   }
 }
 
-console.log(`✓ Synced ${copied} ZK artifact(s) to ${path.relative(root, dest)}`);
+console.log(`✓ Synced ${copied} ZK artifact(s) to ${path.relative(workspaceRoot, dest)}`);

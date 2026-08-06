@@ -16,8 +16,11 @@
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "paths": {
+      "@contract/*": ["../contract/managed/*"]
+    }
   },
   "include": ["src/**/*", "vite.config.ts"],
-  "exclude": ["node_modules", "dist", "contracts/managed"]
+  "exclude": ["node_modules", "dist"]
 }

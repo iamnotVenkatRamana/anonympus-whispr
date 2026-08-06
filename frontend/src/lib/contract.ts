@@ -22,7 +22,7 @@ import { setNetworkId } from '@midnight-ntwrk/midnight-js-network-id';
 import { CompiledContract } from '@midnight-ntwrk/midnight-js-protocol/compact-js';
 import { CostModel } from '@midnight-ntwrk/midnight-js-protocol/ledger';
 
-import { Contract, ledger } from '../../contracts/managed/anonymous-whispers/contract/index.js';
+import { Contract, ledger } from '@contract/anonymous-whispers/contract/index.js';
 import { createDAppConnectorWalletProvider } from './dapp-connector-wallet-provider';
 
 /**
@@ -117,7 +117,7 @@ export const publicDataProvider = indexerPublicDataProvider(
 
 /**
  * Shape of the Level 3 additions to the generated ledger projector. The
- * committed artifacts under contracts/managed may predate the Level 3
+ * committed artifacts under contract/managed may predate the Level 3
  * recompile, so these fields are read structurally and treated as optional at
  * runtime; after `npm run compile` regenerates the projector they are all
  * present. The List projector exposes iteration plus a bigint length().

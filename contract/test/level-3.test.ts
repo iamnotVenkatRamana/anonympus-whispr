@@ -25,6 +25,12 @@ import {
   type CircuitContext,
 } from '@midnight-ntwrk/compact-runtime';
 
+// Crosses the contract/frontend split on purpose: crypto.ts is the frontend's
+// client-side envelope implementation, and this suite is what proves it
+// matches the contract's Bytes<512> layout. It resolves 'tweetnacl' from
+// frontend/node_modules (Node looks up node_modules from the imported file's
+// own directory, not the test runner's cwd), so no crypto deps are duplicated
+// into contract/package.json.
 import {
   ENVELOPE_BYTES,
   PLAINTEXT_BYTES,
@@ -35,7 +41,7 @@ import {
   generateRecipientKeypair,
   importRecipientKeys,
   publicKeyFromSecret,
-} from '../src/lib/crypto';
+} from '../../frontend/src/lib/crypto';
 
 // ─── Crypto layer ────────────────────────────────────────────────────────────
 
@@ -107,7 +113,7 @@ describe('crypto: nacl.box envelope scheme', () => {
 // ─── Circuit layer ───────────────────────────────────────────────────────────
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const zkConfigPath = path.resolve(__dirname, '..', 'contracts', 'managed', 'anonymous-whispers');
+const zkConfigPath = path.resolve(__dirname, '..', 'managed', 'anonymous-whispers');
 const contractUrl = pathToFileURL(path.join(zkConfigPath, 'contract', 'index.js')).href;
 
 const compiledModule = (await import(contractUrl)) as {

@@ -1,9 +1,18 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      // Resolves compiled Compact artifacts from the sibling contract/
+      // package. contract/managed is committed (not generated in CI), so this
+      // alias works straight after clone with no build step required first.
+      '@contract': fileURLToPath(new URL('../contract/managed', import.meta.url)),
+    },
+  },
   // Note on WASM: @midnight-ntwrk/ledger-v8 ships wasm-bindgen output built for
   // the "bundler" target (`import * as wasm from './..._bg.wasm'`). Vite 8
   // handles that natively and emits the .wasm as an asset. Do NOT add
