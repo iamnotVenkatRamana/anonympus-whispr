@@ -1,0 +1,58 @@
+/**
+ * "Encrypted midnight" design tokens: pure monochrome, two worlds.
+ *
+ * The reporter's world is dark/encrypted (private witness); the on-chain
+ * world is light/verifiable (public ledger). No purple, no indigo, no
+ * default blue — the one accent is contrast itself. These are plain CSS
+ * custom properties, not Tailwind @theme colors: Tailwind here is layout and
+ * spacing only, so components consume these directly (var(--ink), etc.)
+ * rather than through generated utility classes.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --ink: #000000;
+  --ink-2: #0a0a0b;
+  --ink-surface: #141416;
+  --ink-line: #26262a;
+  --paper: #f4f5f6;
+  --paper-surface: #ffffff;
+  --paper-line: #dadce0;
+  --text-dark: #f5f6f7;
+  --muted-dark: rgb(255 255 255 / 0.62);
+  --text-light: #0a0a0b;
+  --muted-light: rgb(10 10 11 / 0.6);
+  --hair: rgb(255 255 255 / 0.4);
+  --signal: #ffffff;
+
+  --font-display: 'Readex Pro', system-ui, -apple-system, sans-serif;
+  --font-crypto: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.hero-title {
+  text-transform: lowercase;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+}
+
+/*
+ * Global body/type reset for the new landing identity. This runs after
+ * index.css's existing "ink and gold" @theme, which /report and /inbox still
+ * use verbatim until Phase 4 re-skins them — those pages keep their current
+ * color-* utility classes (bg-void, text-bright, ...) unaffected by this
+ * block; only the inherited font-family and body background/color change
+ * app-wide starting now, per the Phase 2 spec.
+ */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-display);
+  background: #000;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}
