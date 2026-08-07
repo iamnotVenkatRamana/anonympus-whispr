@@ -1,44 +1,49 @@
-# Level 4 Rebuild — Progress
+# Level 4 SDK Extraction — Progress
 
-Status as of 2026-08-06, branch `level-4-restructure`. Not committed — this file is a working note for whoever (human or Claude) picks this up next.
+Status as of 2026-08-07, branch `level-4-restructure`. Not committed — this file is a working note for whoever (human or Claude) picks this up next, especially across the Linux→Windows machine switch.
 
-## Done
+## SDK extraction: COMPLETE (Phases 1–5, all committed)
 
-**Phase 0 — Inventory & safety**
-- Confirmed starting branch was `main` (clean tree); created `level-4-restructure` before any changes.
-- Read and mapped the full Level 3 codebase against the PRESERVE list (Buffer polyfill order, bound `window.fetch`, `hintUsage` fallback, `setNetworkId` init, `dapp-connector-api@4.0.1` `ConnectedAPI` shape, error surfacing, Compact/Docker/Node requirements).
-- Found one contradiction: the PRESERVE list said "Preprod, not Preview," but the actual Level 3 code deliberately targets **Preview** (code comment: Preprod's indexer was lagging as of 2026-07-23) and the live deployed contract is on Preview. Flagged to the user; decided to keep Preview for now (see Open Threads below).
+```
+cf09751 build(workspace): add root npm workspaces and scaffold @anonymous-whispers/sdk
+7619fd5 feat(sdk): extract pure crypto core into @anonymous-whispers/sdk
+d5bb31a test(sdk): add pure crypto round-trip and property tests
+13dfe13 feat(sdk): wire encrypted chain layer over the contract workspace
+9e28144 refactor(frontend): consume @anonymous-whispers/sdk, remove duplicated core
+```
 
-**Phase 1 — Restructure into `contract/` + `frontend/`**
-- Moved every file with `git mv` (history preserved) into the target layout:
-  - `contract/`: `src/anonymous-whispers.compact`, `managed/`, `scripts/` (deploy, cli, setup, network, wallet, wallet-state, check-balance, e2e-check, sync-zk-assets), `test/`, `package.json`, `tsconfig.json`, `docker-compose.yml`.
-  - `frontend/`: `src/` (components, pages, lib, App.tsx, main.tsx, polyfills.ts), `index.html`, `package.json`, `tsconfig.json`, `vite.config.ts`, `vercel.json`.
-- Split the single root `package.json`/lockfile into two, dependencies assigned by actual per-file import analysis (not guessed).
-- Added `@contract` alias (`frontend/vite.config.ts` `resolve.alias` + `frontend/tsconfig.json` `paths`) → `../contract/managed`, and repointed the compiled-artifact import in `frontend/src/lib/contract.ts`.
-- Fixed every path broken by the move (`sync-zk-assets.mjs` now writes into the sibling `frontend/public/zk/`; test files' `path.resolve` calls updated).
-- `contract/test/level-3.test.ts` deliberately still imports crypto logic from `frontend/src/lib/crypto.ts` (documented inline) rather than duplicating it — Node resolves `tweetnacl` from `frontend/node_modules` since that's where the imported file lives.
-- Updated `.gitignore` comments/patterns for the new paths.
-- Verified: `frontend` — `tsc --noEmit` clean, `vite build` succeeds. `contract` — `vitest run` → 16/16 tests pass (4 circuit + 12 Level 3, including the crypto round-trip crossing into `frontend/`).
+`@anonymous-whispers/sdk` now exists as a real npm workspace (root `package.json` → `["contract", "frontend", "sdk"]`) and is the single source of truth for:
 
-**Phase 2 — Design tokens + motion foundation**
-- Installed `lenis`, `gsap`, `framer-motion` in `frontend/`.
-- Added `frontend/src/styles/tokens.css`: the monochrome two-world palette (`--ink`/`--paper`, `--hair`, `--signal`), Readex Pro (300–700) + IBM Plex Mono via Google Fonts, `.hero-title`, and global `body`/`html`/`#root` reset.
-- Added `frontend/src/hooks/useLenis.ts`: smooth-scroll hook for the landing page only, skips initializing entirely under `prefers-reduced-motion`, not wired into `/report` or `/inbox` on purpose.
-- Wired `tokens.css` into `main.tsx` after `index.css`.
-- Verified: `tsc --noEmit` clean, `vite build` succeeds.
-- Transitional note: the new global body font/color now applies app-wide, including to the not-yet-re-skinned `/report` and `/inbox` — expected until Phase 4.
+- **Pure crypto** (`sdk/src/keys.ts`, `sdk/src/envelope.ts`) — moved byte-for-byte from `frontend/src/lib/crypto.ts` (diff-audited symbol by symbol; only relocated, not rewritten). `deriveFingerprint` deliberately **not** built — deferred to L5 with key-change-detection.
+- **Chain layer** (`sdk/src/chain.ts`, `sdk/src/dapp-connector-wallet-provider.ts`) — `connectToContract`, `level3CallTx` (register_recipient + submit_encrypted_report), `readPublicState`, `isUnregisteredKey`, `NETWORK_ID`, `CONTRACT_ADDRESS`. Legacy `submit_report` (`CIRCUIT_ID`, `REPORT_CONTENT_BYTES`) deliberately excluded from the SDK surface — it's L1/L2-only.
+- `frontend/` fully consumes the SDK now — `PublicLedger`, `Report`, `App`, `Inbox`, `WalletConnect`, `EncryptedReportForm` all import from `@anonymous-whispers/sdk`. `frontend/src/lib/contract.ts` is trimmed to 20 lines (re-exports `connectToContract`/`DeployedWhispersContract` from the SDK + keeps `REPORT_CONTENT_BYTES` locally) purely so `CircuitCall.tsx`'s legacy flow keeps compiling. Dead `frontend/src/lib/dapp-connector-wallet-provider.ts` deleted.
 
-## Next
+**Verified (Linux sandbox):**
+- `sdk` — `tsc --noEmit` clean, **4/4 unit tests pass** (round-trip, unlinkability, wrong-key-fails, 512-byte shape) — no network required.
+- `frontend` — `tsc --noEmit` clean, `vite build` succeeds.
+- `contract` — **16/16 tests pass** (4 circuit + 12 Level 3, including the crypto round-trip that now crosses into `sdk/`). `contract/managed` untouched by the extraction (confirmed via diff after every compile check).
 
-**Phase 3 — Immersive landing page (`/`)**
-Hero (pill navbar, staggered headline, anonymous-figure background + grain fallback, truthful stat blocks), statement band, the two-world dark→light scroll morph (GSAP ScrollTrigger, the signature privacy-model visualization), how-it-works, the two doors into `/report` and `/inbox`, tech strip + footer with placeholder logo.
+## FIRST THING TO DO ON WINDOWS
+
+Run `npm run dev` (frontend) and open the app in a **real browser** — Chrome, not headless — and click through `/`, `/report`, `/inbox`.
+
+Why this matters: in the Linux sandbox, headless Chrome hit `TypeError: Class extends value undefined is not a constructor or null` from `abstract-level` (a transitive dep of `midnight-js-level-private-state-provider`), leaving `#root` empty in both `npm run dev` and a built+previewed `vite build`. **This is confirmed pre-existing** — I reproduced the identical crash on the pre-refactor code via `git stash`, so it's not something the SDK extraction caused. It's most likely specific to running headless Chrome in this sandboxed environment (missing something `abstract-level`'s browser build expects at runtime) rather than a real bug — **the app rendered fine in an actual browser earlier today**, before this crash was even noticed. Still, this needs a real-browser confirmation on Windows before trusting that pages render, since the sandbox couldn't prove it either way for the current code.
+
+If it does reproduce in a real browser too, start with `abstract-level`/`browser-level`/`level` in `frontend/node_modules` and `@midnight-ntwrk/midnight-js-level-private-state-provider`'s dependency on them — check for a version mismatch or a Vite 8 (rolldown) pre-bundling issue.
 
 ## Open threads
 
-1. **`npm run compile` not yet verified from scratch.** The `compact` CLI isn't installed in this sandbox, so Phase 1's contract move was validated against the already-committed `contract/managed/` artifacts (tests pass against them) but a real compile was never run post-move. Needs a Linux machine with the Compact toolchain to confirm `contract/src/anonymous-whispers.compact` still compiles cleanly into `contract/managed/` from its new path.
-2. **Preprod-vs-Preview is parked, not resolved.** Currently left on Preview (matches what's actually deployed). Revisit at the deploy/docs phase: either the README documents Preview as the real target with the honest reason (Preprod indexer lag), or a fresh Preprod deploy happens and the contract address/network config gets updated together.
-3. **Hero asset.** Plan is to self-generate a monochrome anonymous "finger to lips" image/video and drop it in as `frontend/public/hero/figure.mp4` + `figure-poster.jpg`. If that doesn't happen before Phase 3, Phase 3 ships with the authored grain/noise + vignette + silhouette fallback instead — never a blank hero.
+1. **Nick's package-dupe fix for the `ChargedState` blocker.** Nick has a fix in his PR [midnightntwrk/example-private-party#25](https://github.com/midnightntwrk/example-private-party/pull/25) — force `@midnight-ntwrk/ledger` and `@midnight-ntwrk/onchain-runtime` to matching versions via root-level overrides. Next step: run `npm ls @midnight-ntwrk/ledger` (and `onchain-runtime`) to check for duplicate versions across the workspace, then add the equivalent overrides to the root `package.json`. This is the likely fix for the long-standing `expected instance of ChargedState` error (both Preview and Preprod moved to protocolVersion 1000000, current SDK pin is 4.1.1) — do this **before** the Preprod deploy below, not after.
 
-## Environment note
+2. **Preprod is now compulsory, and sync takes ~3 hours.** Network requirements changed — Preprod is no longer optional/parked, it's required. Preprod sync takes roughly 3 hours, so kick it off early, not right before a deploy deadline. At deploy time: switch `NETWORK_ID` from `'preview'` to `'preprod'` in `sdk/src/chain.ts` (currently the only place it's defined — `frontend/src/components/landing/facts.ts` has its own deliberately-literal copy that must be kept in sync, per its own comment). **Do the package-dupe version fix (#1) before this deploy**, not after — deploying on a still-broken SDK pin wastes the sync wait.
 
-Contract compile and deploy are **Linux-only** (no Compact compiler binary for Windows). A Windows machine can do all of Phase 3's frontend work (landing page, motion, styling) but cannot run `contract` package scripts (`compile`, `deploy`, `cli`, `setup`, `test:e2e`) or verify open thread #1 above.
+3. **`CircuitCall.tsx` is dead L1/L2 code.** Confirmed unreachable — not routed or rendered anywhere in the current app (`App.tsx` only routes `/`, `/report`, `/inbox`; nothing imports `<CircuitCall>`). It still compiles today only because `frontend/src/lib/contract.ts` was deliberately kept alive for it during the SDK extraction. Worth a decision: delete it (and then `lib/contract.ts` + `REPORT_CONTENT_BYTES` can go too, closing out the last non-SDK contract wiring in `frontend/`), or keep it around as a reference implementation of the Level 1/2 flow. Not removed yet — flagged for a separate decision.
+
+## Remaining Level 4 work
+
+- CI/CD (nothing wired yet for the new `sdk/` + `contract/` + `frontend/` workspace layout)
+- README / docs update (needs to describe the SDK as its own package, not just app internals)
+- The package-dupe version fix (open thread #1)
+- Preprod deploy (open thread #2 — start the sync early)
+- Round-trip verify against the live Preprod deployment once deployed (register → encrypt → submit → decrypt, real wallet)
+- Demo video
