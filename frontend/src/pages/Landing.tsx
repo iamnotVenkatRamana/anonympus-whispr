@@ -4,9 +4,11 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Hero } from '../components/landing/Hero';
 import { HowItWorks } from '../components/landing/HowItWorks';
 import { PrivacyMorph } from '../components/landing/PrivacyMorph';
+import { SdkSurface } from '../components/landing/SdkSurface';
 import { StatementBand } from '../components/landing/StatementBand';
-import { TechStripFooter } from '../components/landing/TechStripFooter';
+import { SiteFooter, TechStrip } from '../components/landing/TechStripFooter';
 import { TwoDoors } from '../components/landing/TwoDoors';
+import { UseCases } from '../components/landing/UseCases';
 import { useLenis } from '../hooks/useLenis';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
@@ -14,6 +16,10 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
  * The immersive landing page. Rendered outside the app Shell (see App.tsx):
  * every section here is full-bleed, and the Shell's centred max-w-3xl column
  * and wallet header belong to /report and /inbox, not to this page.
+ *
+ * The page argues in one direction: here is a channel nobody can trace, here
+ * is exactly what an observer sees, here is the reusable piece that does it,
+ * here is everywhere else it applies, and here is the sample app running.
  */
 export function Landing() {
   // `?rm=1` forces the reduced-motion rendering without changing an OS
@@ -38,13 +44,25 @@ export function Landing() {
   );
 
   return (
-    <main className="w-full bg-black">
+    <main className="landing w-full bg-black">
       <Hero reducedMotion={reducedMotion} onJump={jumpTo} />
       <StatementBand />
       <PrivacyMorph reducedMotion={reducedMotion} />
-      <HowItWorks />
-      <TwoDoors />
-      <TechStripFooter />
+
+      {/*
+        One continuous light surface from the morph's resolved paper value all
+        the way down to the footer, so the four sections inside read as one
+        world rather than four stacked white blocks.
+      */}
+      <div className="light-world">
+        <HowItWorks reducedMotion={reducedMotion} />
+        <SdkSurface reducedMotion={reducedMotion} />
+        <UseCases reducedMotion={reducedMotion} />
+        <TwoDoors reducedMotion={reducedMotion} />
+        <TechStrip />
+      </div>
+
+      <SiteFooter />
     </main>
   );
 }

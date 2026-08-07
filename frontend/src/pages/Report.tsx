@@ -55,17 +55,20 @@ export function Report({ connection }: Props) {
   return (
     <>
       {loading && (
-        <section className="rounded-2xl border border-edge bg-surface/30 p-10">
-          <p className="text-base text-muted">Checking for a registered recipient...</p>
+        <section className="surface-dark-empty p-10">
+          <p className="text-base text-white/55">Checking for a registered recipient...</p>
         </section>
       )}
 
       {!loading && !recipientKey && (
-        <section className="rounded-2xl border border-dashed border-edge-lit bg-surface/30 p-12 text-center">
-          <p className="text-lg text-bright">
+        <section className="surface-dark-empty p-12 text-center">
+          <p className="display text-2xl font-semibold text-white">
             This organization hasn't set up a recipient yet.
           </p>
-          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-dim">
+          <p
+            className="mx-auto mt-4 max-w-md text-base leading-relaxed"
+            style={{ color: 'var(--muted-dark)' }}
+          >
             Reports are encrypted to the organization's public key, and none has been
             registered on-chain. Contact the organization and ask them to set up their
             inbox before submitting.
@@ -75,22 +78,25 @@ export function Report({ connection }: Props) {
 
       {!loading && recipientKeyHex && (
         <>
-          <section className="flex flex-wrap items-center gap-3 rounded-2xl border border-edge bg-surface/50 px-7 py-5">
-            <p className="text-sm text-muted">Encrypting to recipient key</p>
-            <p className="font-mono text-sm text-signal/90" title={recipientKeyHex}>
+          <section className="surface-dark flex flex-wrap items-center gap-3 px-7 py-6">
+            <p className="eyebrow eyebrow-dark">encrypting to recipient key</p>
+            <p className="mono text-sm text-white" title={recipientKeyHex}>
               {truncateKey(recipientKeyHex)}
             </p>
-            <span className="text-sm text-muted">
+            <span className="mono text-sm text-white/50">
               v{state?.recipientKeyVersion.toString()}
             </span>
             <button
               type="button"
               onClick={handleCopyKey}
-              className="rounded-lg border border-signal/15 px-3 py-1.5 text-sm text-signal/60 transition-colors hover:border-signal/40 hover:text-signal"
+              className="btn-quiet focus-ring px-4 py-1.5 text-sm"
             >
               {copied ? 'Copied' : 'Copy full key'}
             </button>
-            <p className="w-full text-sm leading-relaxed text-muted">
+            <p
+              className="w-full text-sm leading-relaxed"
+              style={{ color: 'var(--muted-dark)' }}
+            >
               Verify this key with the organization through another channel before
               submitting anything sensitive.
             </p>
@@ -104,9 +110,14 @@ export function Report({ connection }: Props) {
               onSubmitted={handleSubmitted}
             />
           ) : (
-            <section className="rounded-2xl border border-dashed border-edge-lit bg-surface/30 p-12 text-center">
-              <p className="text-lg text-bright">Connect a wallet to submit a report.</p>
-              <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-dim">
+            <section className="surface-dark-empty p-12 text-center">
+              <p className="display text-2xl font-semibold text-white">
+                Connect a wallet to submit a report.
+              </p>
+              <p
+                className="mx-auto mt-4 max-w-md text-base leading-relaxed"
+                style={{ color: 'var(--muted-dark)' }}
+              >
                 Your report is encrypted in this browser before anything is sent. The
                 chain only ever carries the sealed envelope; the text itself is never
                 transmitted, stored, or logged in readable form.

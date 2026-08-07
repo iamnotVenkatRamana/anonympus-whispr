@@ -183,8 +183,8 @@ export function Inbox({ connection }: Props) {
   }, [storedKeys, publicState]);
 
   const importPanel = (
-    <div className="flex flex-col gap-3 rounded-2xl border border-edge bg-surface/30 p-7">
-      <p className="text-sm text-muted">
+    <div className="surface-dark flex flex-col gap-4 p-7">
+      <p className="text-sm leading-relaxed" style={{ color: 'var(--muted-dark)' }}>
         Paste your secret key (64 hex characters) to load an existing inbox identity.
       </p>
       <input
@@ -192,19 +192,19 @@ export function Inbox({ connection }: Props) {
         value={pastedSecret}
         onChange={(event) => setPastedSecret(event.target.value)}
         placeholder="Secret key hex"
-        className="focus-glow rounded-lg border border-edge bg-transparent px-4 py-2.5 font-mono text-sm text-bright outline-none placeholder:text-muted"
+        className="field mono px-4 py-3 text-sm"
       />
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={handleImport}
           disabled={pastedSecret.trim().length === 0}
-          className="self-start rounded-lg bg-signal px-5 py-2.5 text-sm font-semibold text-void transition-colors hover:bg-signal-deep disabled:cursor-not-allowed disabled:bg-edge disabled:text-muted"
+          className="btn-solid focus-ring self-start px-5 py-2.5 text-sm"
         >
           Import key
         </button>
         {importError && (
-          <p className="text-sm text-alert" role="alert">
+          <p className="mono text-[12px] break-all text-white/70" role="alert">
             {importError}
           </p>
         )}
@@ -218,10 +218,11 @@ export function Inbox({ connection }: Props) {
     return (
       <section className="flex flex-col gap-8">
         <div>
-          <h2 className="text-sm tracking-[0.25em] text-signal uppercase">
-            Set up as recipient
-          </h2>
-          <p className="mt-4 max-w-xl text-base leading-relaxed text-dim">
+          <h2 className="eyebrow eyebrow-dark">set up as recipient</h2>
+          <p
+            className="mt-4 max-w-xl text-base leading-relaxed"
+            style={{ color: 'var(--muted-dark)' }}
+          >
             Generate a keypair in this browser, publish the public half on-chain, and
             keep the secret half. Reporters encrypt to your public key; only your
             secret key can open what they send.
@@ -233,14 +234,14 @@ export function Inbox({ connection }: Props) {
             <button
               type="button"
               onClick={handleGenerate}
-              className="rounded-lg bg-signal px-6 py-3 text-sm font-semibold tracking-wide text-void transition-colors hover:bg-signal-deep"
+              className="btn-solid focus-ring px-6 py-3 text-sm"
             >
               Generate recipient keys
             </button>
             <button
               type="button"
               onClick={() => setShowImport((v) => !v)}
-              className="rounded-lg border border-signal/15 px-4 py-2.5 text-sm text-signal/60 transition-colors hover:border-signal/40 hover:text-signal"
+              className="btn-quiet focus-ring px-5 py-2.5 text-sm"
             >
               I already have a key
             </button>
@@ -251,33 +252,40 @@ export function Inbox({ connection }: Props) {
 
         {generated && (
           <div className="flex flex-col gap-6">
-            <div className="rounded-2xl border border-warn/40 bg-surface/50 p-7">
-              <p className="text-base font-semibold text-warn">
-                Save your secret key NOW.
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-dim">
+            {/*
+              The loudest thing the app ever says, so it is the one inverted
+              block: paper on black. Monochrome leaves contrast as the only
+              severity signal available, and this warrants all of it.
+            */}
+            <div className="notice-loud p-7">
+              <p className="display text-xl font-semibold">Save your secret key NOW.</p>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed opacity-75">
                 Anyone with this key can read all submissions. Losing it means all
                 reports become permanently unreadable. There is no recovery: not by
                 this app, not by Midnight, not by anyone.
               </p>
             </div>
 
-            <div>
-              <p className="text-sm text-muted">Public key (published on-chain)</p>
-              <p className="mt-1.5 font-mono text-sm leading-relaxed break-all text-bright">
-                {generated.publicKeyHex}
-              </p>
-              <p className="mt-4 text-sm text-muted">Secret key (keep private)</p>
-              <p className="mt-1.5 font-mono text-sm leading-relaxed break-all text-warn">
-                {generated.secretKeyHex}
-              </p>
+            <div className="surface-dark flex flex-col gap-5 p-7">
+              <div>
+                <p className="eyebrow eyebrow-dark">public key (published on-chain)</p>
+                <p className="mono mt-2.5 text-sm leading-relaxed break-all text-white">
+                  {generated.publicKeyHex}
+                </p>
+              </div>
+              <div className="border-t border-white/10 pt-5">
+                <p className="eyebrow eyebrow-dark">secret key (keep private)</p>
+                <p className="mono mt-2.5 text-sm leading-relaxed break-all text-white">
+                  {generated.secretKeyHex}
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
               <button
                 type="button"
                 onClick={() => downloadKeys(generated)}
-                className="rounded-lg border border-signal/40 px-5 py-2.5 text-sm font-semibold text-signal transition-colors hover:border-signal"
+                className="btn-quiet focus-ring px-5 py-2.5 text-sm"
               >
                 Download secret key
               </button>
@@ -285,19 +293,22 @@ export function Inbox({ connection }: Props) {
                 type="button"
                 onClick={handleRegister}
                 disabled={!connection || registerPhase.kind === 'submitting'}
-                className="rounded-lg bg-signal px-6 py-3 text-sm font-semibold tracking-wide text-void transition-colors hover:bg-signal-deep disabled:cursor-not-allowed disabled:bg-edge disabled:text-muted"
+                className="btn-solid focus-ring px-6 py-3 text-sm"
               >
                 {registerPhase.kind === 'submitting'
                   ? 'Registering...'
                   : 'Register public key on-chain'}
               </button>
               {!connection && (
-                <p className="text-sm text-muted">Connect a wallet to register.</p>
+                <p className="text-sm text-white/50">Connect a wallet to register.</p>
               )}
             </div>
 
             {registerPhase.kind === 'error' && (
-              <p className="text-sm leading-relaxed break-all text-alert" role="alert">
+              <p
+                className="notice-quiet mono px-5 py-4 text-[12px] leading-relaxed break-all text-white/80"
+                role="alert"
+              >
                 {registerPhase.message}
               </p>
             )}
@@ -313,24 +324,24 @@ export function Inbox({ connection }: Props) {
     <section className="flex flex-col gap-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="text-sm tracking-[0.25em] text-signal uppercase">Inbox</h2>
-          <p className="mt-3 font-mono text-sm text-dim" title={storedKeys.publicKeyHex}>
+          <h2 className="eyebrow eyebrow-dark">inbox</h2>
+          <p className="mono mt-3 text-sm text-white/70" title={storedKeys.publicKeyHex}>
             Recipient key {storedKeys.publicKeyHex.slice(0, 6)}...
             {storedKeys.publicKeyHex.slice(-4)}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={() => setShowImport((v) => !v)}
-            className="rounded-lg border border-signal/15 px-3 py-1.5 text-sm text-signal/60 transition-colors hover:border-signal/40 hover:text-signal"
+            className="btn-quiet focus-ring px-4 py-1.5 text-sm"
           >
             Import different key
           </button>
           <button
             type="button"
             onClick={handleForgetKey}
-            className="rounded-lg border border-signal/15 px-3 py-1.5 text-sm text-signal/60 transition-colors hover:border-signal/40 hover:text-signal"
+            className="btn-quiet focus-ring px-4 py-1.5 text-sm"
           >
             Forget key
           </button>
@@ -340,30 +351,39 @@ export function Inbox({ connection }: Props) {
       {showImport && importPanel}
 
       {registerPhase.kind === 'done' && (
-        <p className="rounded-2xl border border-signal/40 bg-surface/50 px-7 py-5 text-sm text-signal">
-          Recipient key registered on-chain. Transaction: <span className="font-mono break-all">{registerPhase.txId}</span>
-        </p>
+        <div className="surface-dark px-7 py-5">
+          <p className="eyebrow eyebrow-dark">recipient key registered on-chain</p>
+          <p className="mono mt-2.5 text-sm break-all text-white/80">
+            {registerPhase.txId}
+          </p>
+        </div>
       )}
 
       {keyMatchesChain === false && (
-        <p className="rounded-2xl border border-warn/40 bg-surface/50 px-7 py-5 text-sm leading-relaxed text-warn">
+        /* Not an error, but the one mismatch that silently loses reports. */
+        <p className="notice-quiet px-7 py-5 text-sm leading-relaxed text-white">
           The key loaded here does not match the recipient key currently registered
           on-chain. New submissions are encrypted to the on-chain key; this key will
           only open submissions made while it was registered.
         </p>
       )}
 
-      <p className="text-sm leading-relaxed text-muted">
+      <p className="text-sm leading-relaxed" style={{ color: 'var(--muted-dark)' }}>
         Your secret key is cached in this browser's localStorage only. Clearing site
         data removes it; keep the downloaded copy safe.
       </p>
 
-      {stateLoading && <p className="text-base text-muted">Reading the inbox...</p>}
+      {stateLoading && <p className="text-base text-white/55">Reading the inbox...</p>}
 
       {!stateLoading && decrypted.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-edge-lit bg-surface/30 p-12 text-center">
-          <p className="text-lg text-bright">No encrypted submissions yet.</p>
-          <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-dim">
+        <div className="surface-dark-empty p-12 text-center">
+          <p className="display text-2xl font-semibold text-white">
+            No encrypted submissions yet.
+          </p>
+          <p
+            className="mx-auto mt-4 max-w-md text-base leading-relaxed"
+            style={{ color: 'var(--muted-dark)' }}
+          >
             Share the report link with your organization. Submissions appear here and
             decrypt locally with your key.
           </p>
@@ -371,20 +391,17 @@ export function Inbox({ connection }: Props) {
       )}
 
       {decrypted.map((entry) => (
-        <article
-          key={entry.index}
-          className="rounded-2xl border border-edge bg-surface/50 p-7"
-        >
-          <p className="text-sm text-muted">
-            Submission #{decrypted.length - entry.index}
-            <span className="ml-2 text-muted/70">(newest first)</span>
+        <article key={entry.index} className="surface-dark p-7">
+          <p className="eyebrow eyebrow-dark">
+            submission #{decrypted.length - entry.index}
+            <span className="ml-2 text-white/35">(newest first)</span>
           </p>
           {entry.text !== null ? (
-            <p className="mt-3 text-base leading-relaxed whitespace-pre-wrap text-bright">
+            <p className="mt-4 text-base leading-relaxed whitespace-pre-wrap text-white">
               {entry.text}
             </p>
           ) : (
-            <p className="mt-3 text-sm text-alert">
+            <p className="mt-4 text-sm leading-relaxed text-white/60">
               Corrupt or wrong-key ciphertext: this entry could not be decrypted with
               the loaded key.
             </p>

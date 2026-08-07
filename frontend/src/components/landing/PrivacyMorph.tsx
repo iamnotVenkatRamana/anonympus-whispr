@@ -159,8 +159,13 @@ function ReportDocument({
         border: '1px solid var(--world-line, #26262a)',
       }}
     >
+      {/*
+        A label, so it is set in the body face like every other eyebrow. The
+        inline colour stays: it is interpolated per scroll frame and has to
+        win over the class.
+      */}
       <figcaption
-        className="mono text-[11px] tracking-[0.22em] uppercase"
+        className="eyebrow"
         style={{ color: 'var(--world-muted, #8b8b93)' }}
       >
         {isPublic ? 'PUBLIC · ON-CHAIN' : 'PRIVATE · WITNESS'}
@@ -214,11 +219,8 @@ function ProofChip({
         opacity: reducedMotion ? 1 : 0,
       }}
     >
-      <p
-        className="mono text-[11px] tracking-[0.22em] uppercase"
-        style={{ color: 'var(--world-muted, #8b8b93)' }}
-      >
-        VERIFIABLE ON-CHAIN
+      <p className="eyebrow" style={{ color: 'var(--world-muted, #8b8b93)' }}>
+        verifiable on-chain
       </p>
       <dl className="mono mt-6 flex flex-col gap-4 text-[12px] md:text-[13px]">
         {PROOF_FIELDS.map(({ key, value }) => (

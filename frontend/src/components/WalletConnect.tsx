@@ -182,19 +182,16 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
   if (connection) {
     return (
       <div className="flex items-center gap-3">
-        <span className="flex items-center gap-2.5 rounded-lg border border-edge bg-void/70 px-4 py-2 shadow-[inset_0_1px_3px_0_rgba(0,0,0,0.4)]">
-          <span
-            className="animate-pulse-ring size-2 rounded-full bg-signal"
-            aria-hidden="true"
-          />
-          <span className="font-mono text-sm text-signal/90" title={connection.address}>
+        <span className="surface-dark flex items-center gap-2.5 px-4 py-2.5">
+          <span className="pulse-dot size-2 rounded-full bg-white" aria-hidden="true" />
+          <span className="mono text-sm text-white/90" title={connection.address}>
             {truncateAddress(connection.address)}
           </span>
         </span>
         <button
           type="button"
           onClick={handleDisconnect}
-          className="rounded-lg border border-signal/15 px-3 py-1.5 text-sm text-signal/60 transition-colors hover:border-signal/40 hover:text-signal"
+          className="btn-quiet focus-ring px-4 py-2 text-sm"
         >
           Disconnect
         </button>
@@ -208,20 +205,28 @@ export function WalletConnect({ connection, onConnect, onDisconnect }: Props) {
         type="button"
         onClick={handleConnect}
         disabled={status.kind === 'connecting'}
-        className="rounded-lg bg-signal px-6 py-3 text-sm font-semibold text-void transition-colors hover:bg-signal-deep disabled:cursor-not-allowed disabled:opacity-50"
+        className="btn-solid focus-ring px-6 py-3 text-sm"
       >
         {status.kind === 'connecting' ? 'Connecting...' : 'Connect wallet'}
       </button>
 
       {status.kind === 'error' && (
-        <div className="max-w-xs text-right" role="alert">
-          <p className="text-sm text-alert">{status.message}</p>
-          {status.hint && <p className="mt-1 text-sm text-muted">{status.hint}</p>}
+        <div className="notice-quiet max-w-xs px-4 py-3 text-right" role="alert">
+          <p className="text-sm font-medium text-white">{status.message}</p>
+          {/*
+            The hint is often the wallet's own error string, so it is set in
+            mono: it is machine output, not prose.
+          */}
+          {status.hint && (
+            <p className="mono mt-1.5 text-[12px] leading-relaxed break-words text-white/60">
+              {status.hint}
+            </p>
+          )}
         </div>
       )}
 
       {status.kind === 'idle' && wallets.length === 0 && (
-        <p className="text-sm text-muted">No wallet detected</p>
+        <p className="text-sm text-white/50">No wallet detected</p>
       )}
     </div>
   );

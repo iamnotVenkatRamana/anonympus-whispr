@@ -38,6 +38,9 @@ export function Navbar({ onJump }: NavbarProps) {
           <button type="button" className={LINK_CLASS} onClick={() => onJump('privacy')}>
             privacy
           </button>
+          <button type="button" className={LINK_CLASS} onClick={() => onJump('sdk')}>
+            sdk
+          </button>
           <Link to="/report" className={LINK_CLASS}>
             report
           </Link>

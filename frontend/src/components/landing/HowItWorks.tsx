@@ -1,59 +1,73 @@
+import { useRef } from 'react';
+
+import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
 import { NETWORK_LABEL } from './facts';
 
 const STEPS = [
   {
     index: '01',
     title: 'write it down',
-    body: 'your report is typed into a form that never posts it anywhere. it stays in the memory of your own browser tab.',
+    body: "the message is composed in the sender's own browser tab and posted nowhere. no draft, no autosave, no server that has ever seen it.",
     crypto: 'stays in memory · never transmitted',
   },
   {
     index: '02',
-    title: 'sealed to the org',
-    body: "the browser fetches the organization's public key from the chain and seals your words to it under a one-time sender key, then throws that key away.",
+    title: 'sealed to the recipient',
+    body: "the sdk reads the recipient's public key off the chain and seals the message to it under a fresh sender keypair, then discards that keypair. two messages from one person cannot be linked.",
     crypto: 'tweetnacl · ephemeral keypair · 512-byte envelope',
   },
   {
     index: '03',
     title: 'only they can open it',
-    body: 'the sealed envelope is published. anyone can check it exists; only the holder of the recipient secret key can read it, on their own machine.',
+    body: "the sealed envelope goes on chain with a proof that it is well formed. anyone can audit that it exists. only the secret key opens it, on the holder's own machine.",
     crypto: `zero-knowledge · midnight ${NETWORK_LABEL}`,
   },
 ];
 
 /**
- * Three steps in the light world. The crypto sublabels are set in mono
- * deliberately: the plain line is for the person deciding whether to trust
- * this, the mono line is for the person auditing it.
+ * The flow, framed as the thing the SDK does rather than the thing this one
+ * app does. Same three steps as before because the steps were right; the copy
+ * now says "the sender" and "the recipient" instead of naming a whistleblower
+ * and an organization, since the next section widens it out.
  */
-export function HowItWorks() {
+export function HowItWorks({ reducedMotion }: { reducedMotion: boolean }) {
+  const rootRef = useRef<HTMLElement | null>(null);
+  useRevealOnScroll(rootRef, reducedMotion);
+
   return (
     <section
       id="how-it-works"
-      className="w-full px-6 py-28 md:px-10 md:py-40"
-      style={{ backgroundColor: 'var(--paper)', color: 'var(--text-light)' }}
+      ref={rootRef}
+      className="w-full px-6 pt-28 pb-16 md:px-10 md:pt-40 md:pb-24"
+      style={{ color: 'var(--text-light)' }}
     >
       <div className="mx-auto max-w-5xl">
-        <h2 className="max-w-2xl text-[8vw] leading-[1.05] font-medium tracking-tight lowercase md:text-[3vw]">
+        <p data-reveal className="eyebrow">
+          the primitive
+        </p>
+        <h2
+          data-reveal
+          className="mt-5 max-w-2xl text-[9vw] leading-[1.02] font-semibold tracking-tight lowercase md:text-[3.2vw]"
+        >
           how it works
         </h2>
 
-        <ol className="mt-16 grid gap-12 md:grid-cols-3 md:gap-10">
+        <ol className="mt-14 grid gap-6 md:mt-20 md:grid-cols-3">
           {STEPS.map((step) => (
-            <li key={step.index}>
-              <p className="mono text-[12px]" style={{ color: 'var(--muted-light)' }}>
-                {step.index}
-              </p>
-              <div
-                className="mt-4 h-px w-full"
-                style={{ backgroundColor: 'var(--paper-line)' }}
-                aria-hidden="true"
-              />
-              <h3 className="mt-6 text-2xl font-medium lowercase">{step.title}</h3>
-              <p className="mt-3 text-[15px] leading-relaxed lowercase" style={{ color: 'var(--muted-light)' }}>
+            <li key={step.index} data-reveal className="surface surface-lift p-7 md:p-8">
+              {/* An ordinal, not machine output, so it stays off mono. */}
+              <p className="eyebrow">{step.index}</p>
+              <h3 className="mt-6 text-2xl font-semibold lowercase">{step.title}</h3>
+              <p
+                className="mt-4 text-[15px] leading-relaxed lowercase"
+                style={{ color: 'var(--muted-light)' }}
+              >
                 {step.body}
               </p>
-              <p className="mono mt-5 text-[12px]" style={{ color: 'var(--text-light)' }}>
+              <p
+                className="mono mt-7 border-t pt-5 text-[12px]"
+                style={{ borderColor: 'rgb(10 10 11 / 0.08)' }}
+              >
                 {step.crypto}
               </p>
             </li>

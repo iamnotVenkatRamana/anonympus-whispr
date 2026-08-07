@@ -88,9 +88,17 @@ export function Hero({ reducedMotion, onJump }: HeroProps) {
           <span className="sr-only">whisper the truth</span>
           {WORDS.map((word) => (
             <span key={word} className="block overflow-hidden" aria-hidden="true">
+              {/*
+                Sized up hard from the grotesque these replaced: Fraunces sets
+                about a third narrower at the same point size, so the previous
+                9vw left the column two hundred pixels short of full. These
+                values fill roughly three quarters of the column width while
+                keeping all three lines clear of the navbar above and the stat
+                row below at a 900px-tall viewport.
+              */}
               <span
                 data-hero-reveal
-                className="hero-title block text-[17vw] font-medium text-white md:text-[10.5vw] lg:text-[9vw]"
+                className="hero-title block text-[23vw] font-semibold text-white md:text-[13vw] lg:text-[11.5vw]"
               >
                 {word}
               </span>

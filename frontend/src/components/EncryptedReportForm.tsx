@@ -147,17 +147,16 @@ export function EncryptedReportForm({ api, address, recipientPublicKey, onSubmit
 
   if (proving) {
     return (
-      <section className="flex min-h-64 flex-col justify-center gap-7 rounded-2xl border border-edge bg-surface/70 p-10">
-        <div className="mx-auto flex flex-col items-center gap-2">
-          <p className="text-sm tracking-[0.25em] text-signal uppercase">
-            Encrypting and proving
-          </p>
-          <span className="gold-shimmer h-px w-48" aria-hidden="true" />
+      <section className="surface-dark flex min-h-64 flex-col justify-center gap-7 p-10">
+        <div className="mx-auto flex flex-col items-center gap-3">
+          <p className="eyebrow eyebrow-dark">encrypting and proving</p>
+          <span className="shimmer-light h-px w-48" aria-hidden="true" />
         </div>
-        <p className="font-mono text-base break-all text-signal/90 selection:bg-signal-deep">
-          {scrambled}
-        </p>
-        <p className="text-center text-base text-dim">
+        <p className="mono text-base break-all text-white/90">{scrambled}</p>
+        <p
+          className="text-center text-base leading-relaxed"
+          style={{ color: 'var(--muted-dark)' }}
+        >
           Your report was sealed to the recipient's key in this browser. Only the
           envelope is being published.
         </p>
@@ -167,28 +166,28 @@ export function EncryptedReportForm({ api, address, recipientPublicKey, onSubmit
 
   if (phase.kind === 'done') {
     return (
-      <section className="flex flex-col gap-7 rounded-b-lg border-t border-signal/40 bg-surface/50 p-10">
+      <section className="surface-dark flex flex-col gap-7 p-10">
         <div>
-          <p className="text-sm tracking-[0.25em] text-signal uppercase">Report submitted</p>
-          <p className="mt-6 text-sm text-muted">Ciphertext hash (auditable commitment)</p>
-          <p className="mt-1.5 font-mono text-base leading-relaxed break-all text-bright">
+          <p className="eyebrow eyebrow-dark">report submitted</p>
+          <p className="mt-6 text-sm text-white/50">Ciphertext hash (auditable commitment)</p>
+          <p className="mono mt-2 text-base leading-relaxed break-all text-white">
             {phase.hash}
           </p>
         </div>
 
         <div>
-          <p className="text-sm text-muted">Transaction</p>
-          <p className="mt-1.5 font-mono text-sm leading-relaxed break-all text-dim">
+          <p className="text-sm text-white/50">Transaction</p>
+          <p className="mono mt-2 text-sm leading-relaxed break-all text-white/70">
             {phase.txId}
           </p>
         </div>
 
-        <p className="flex items-center gap-3 border-t border-edge pt-6 text-base font-medium text-signal">
+        <p className="flex items-center gap-3 border-t border-white/10 pt-6 text-base font-medium text-white">
           <svg viewBox="0 0 20 20" fill="none" className="size-6 shrink-0" aria-hidden="true">
-            <circle cx="10" cy="10" r="9" className="stroke-signal" strokeWidth="1.5" />
+            <circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="1.5" />
             <path
               d="M6 10.5l2.5 2.5L14 7.5"
-              className="stroke-signal"
+              stroke="currentColor"
               strokeWidth="1.8"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -200,7 +199,7 @@ export function EncryptedReportForm({ api, address, recipientPublicKey, onSubmit
         <button
           type="button"
           onClick={() => setPhase({ kind: 'idle' })}
-          className="self-start rounded-lg border border-signal/15 px-4 py-2 text-sm text-signal/60 transition-colors hover:border-signal/40 hover:text-signal"
+          className="btn-quiet focus-ring self-start px-5 py-2 text-sm"
         >
           Write another
         </button>
@@ -209,30 +208,38 @@ export function EncryptedReportForm({ api, address, recipientPublicKey, onSubmit
   }
 
   return (
-    <section className="flex flex-col gap-5 py-6">
+    <section className="flex flex-col gap-5">
       <textarea
         value={text}
         onChange={(event) => setText(event.target.value)}
         maxLength={REPORT_CONTENT_BYTES}
         rows={7}
         placeholder="Your report stays yours."
-        className="focus-glow w-full resize-none rounded-2xl border border-edge bg-transparent p-7 text-lg leading-relaxed text-bright transition-[border-color,box-shadow] outline-none placeholder:font-serif placeholder:italic placeholder:text-muted"
+        className="field w-full resize-none p-7 text-lg leading-relaxed"
       />
 
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-sm text-muted">{remaining} bytes left</span>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <span className="mono text-sm text-white/50">{remaining} bytes left</span>
         <button
           type="button"
           onClick={handleSubmit}
           disabled={text.trim().length === 0}
-          className="rounded-lg bg-signal px-6 py-3 text-sm font-semibold tracking-wide text-void transition-colors hover:bg-signal-deep disabled:cursor-not-allowed disabled:bg-edge disabled:text-muted"
+          className="btn-solid focus-ring px-6 py-3 text-sm"
         >
           Encrypt and submit
         </button>
       </div>
 
       {phase.kind === 'error' && (
-        <p className="text-sm leading-relaxed break-all text-alert" role="alert">
+        /*
+          The message is fullErrorText output, i.e. a chain of wallet and SDK
+          error strings. Mono, because that is what it is, and break-all so a
+          long cause chain cannot widen the page.
+        */
+        <p
+          className="notice-quiet mono px-5 py-4 text-[12px] leading-relaxed break-all text-white/80"
+          role="alert"
+        >
           {phase.message}
         </p>
       )}
