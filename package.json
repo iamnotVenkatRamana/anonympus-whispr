@@ -1,0 +1,13 @@
+{
+  "name": "anonymous-whispers",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "contract",
+    "frontend",
+    "sdk"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
