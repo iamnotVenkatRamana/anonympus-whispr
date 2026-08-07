@@ -10,7 +10,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 
-import { readPublicState, type PublicState } from '../lib/contract';
+import { readPublicState, type PublicState } from '@anonymous-whispers/sdk';
 
 const toHexString = (bytes: Uint8Array) =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');

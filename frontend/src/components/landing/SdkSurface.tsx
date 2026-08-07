@@ -5,8 +5,8 @@ import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
 /**
  * The four calls, named as they exist in this repo today rather than as an
  * aspirational API. @anonymous-whispers/sdk really does export
- * generateRecipientKeypair, encryptToRecipient and decryptWithRecipientKey;
- * the submit step is the contract call in src/lib/contract.ts. Naming them
+ * generateRecipientKeypair, encryptToRecipient, decryptWithRecipientKey, and
+ * the submit step (level3CallTx's submit_encrypted_report). Naming them
  * honestly matters more than naming them prettily, because a developer
  * evaluating this will open the files.
  */

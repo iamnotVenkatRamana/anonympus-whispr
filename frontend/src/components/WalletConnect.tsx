@@ -15,7 +15,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ConnectedAPI, InitialAPI } from '@midnight-ntwrk/dapp-connector-api';
 
-import { NETWORK_ID } from '../lib/contract';
+import { NETWORK_ID } from '@anonymous-whispers/sdk';
 
 export type WalletConnection = {
   api: ConnectedAPI;

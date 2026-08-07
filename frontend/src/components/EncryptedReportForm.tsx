@@ -13,12 +13,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ConnectedAPI } from '@midnight-ntwrk/dapp-connector-api';
 
 import {
-  REPORT_CONTENT_BYTES,
+  PLAINTEXT_BYTES,
   connectToContract,
+  encryptToRecipient,
   level3CallTx,
   type DeployedWhispersContract,
-} from '../lib/contract';
-import { encryptToRecipient } from '@anonymous-whispers/sdk';
+} from '@anonymous-whispers/sdk';
 
 type Props = {
   api: ConnectedAPI;
@@ -47,7 +47,7 @@ const toHexString = (bytes: Uint8Array) =>
  * leak an oracle for guessing short reports.
  */
 const prepareEncryptedReport = async (text: string, recipientPublicKey: Uint8Array) => {
-  const encoded = new TextEncoder().encode(text).subarray(0, REPORT_CONTENT_BYTES);
+  const encoded = new TextEncoder().encode(text).subarray(0, PLAINTEXT_BYTES);
   const envelope = encryptToRecipient(encoded, recipientPublicKey);
   const digest = await crypto.subtle.digest('SHA-256', envelope);
   return { envelope, envelopeHash: new Uint8Array(digest) };
@@ -143,7 +143,7 @@ export function EncryptedReportForm({ api, address, recipientPublicKey, onSubmit
     }
   }, [text, api, address, recipientPublicKey, onSubmitted]);
 
-  const remaining = REPORT_CONTENT_BYTES - new TextEncoder().encode(text).length;
+  const remaining = PLAINTEXT_BYTES - new TextEncoder().encode(text).length;
 
   if (proving) {
     return (
@@ -212,7 +212,7 @@ export function EncryptedReportForm({ api, address, recipientPublicKey, onSubmit
       <textarea
         value={text}
         onChange={(event) => setText(event.target.value)}
-        maxLength={REPORT_CONTENT_BYTES}
+        maxLength={PLAINTEXT_BYTES}
         rows={7}
         placeholder="Your report stays yours."
         className="field w-full resize-none p-7 text-lg leading-relaxed"

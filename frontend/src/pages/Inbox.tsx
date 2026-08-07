@@ -14,20 +14,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { WalletConnection } from '../components/WalletConnect';
 import {
-  connectToContract,
-  level3CallTx,
-  readPublicState,
-  type PublicState,
-} from '../lib/contract';
-import {
   bytesToHex,
+  connectToContract,
   decodePaddedReport,
   decryptWithRecipientKey,
   exportRecipientKeys,
   generateRecipientKeypair,
   importRecipientKeys,
+  level3CallTx,
   publicKeyFromSecret,
+  readPublicState,
   type ExportedRecipientKeys,
+  type PublicState,
 } from '@anonymous-whispers/sdk';
 
 export const RECIPIENT_KEY_STORAGE = 'anonymous-whispers-recipient-key';

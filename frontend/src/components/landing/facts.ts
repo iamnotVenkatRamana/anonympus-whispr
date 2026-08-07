@@ -1,17 +1,17 @@
 /**
  * The handful of deployment facts the landing page states out loud.
  *
- * Deliberately literal rather than imported from src/lib/contract.ts. That
- * module calls setNetworkId and constructs the indexer provider at module
- * scope, so importing it here would pull the whole Midnight SDK (and its WASM)
- * into the landing bundle for the sake of two strings. A marketing page would
- * then start failing for reasons that belong to the wallet path.
+ * Deliberately literal rather than imported from @anonymous-whispers/sdk.
+ * That module calls setNetworkId and constructs the indexer provider at
+ * module scope, so importing it here would pull the whole Midnight SDK (and
+ * its WASM) into the landing bundle for the sake of two strings. A marketing
+ * page would then start failing for reasons that belong to the wallet path.
  *
- * KEEP IN SYNC with NETWORK_ID and CONTRACT_ADDRESS in src/lib/contract.ts.
+ * KEEP IN SYNC with NETWORK_ID and CONTRACT_ADDRESS in sdk/src/chain.ts.
  *
  * Note on the network name: the Level 4 spec says "Preprod", but the contract
  * that is actually deployed and verified lives on Preview (the Preprod indexer
- * was lagging; see the comment in src/lib/contract.ts). The page says Preview
+ * was lagging; see the comment in sdk/src/chain.ts). The page says Preview
  * because the page must be true. If a Preprod deploy happens, change these two
  * constants and the copy follows.
  */

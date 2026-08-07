@@ -3,7 +3,7 @@ import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-do
 
 import { Logo } from './components/landing/Logo';
 import { WalletConnect, type WalletConnection } from './components/WalletConnect';
-import { CONTRACT_ADDRESS, NETWORK_ID } from './lib/contract';
+import { CONTRACT_ADDRESS, NETWORK_ID } from '@anonymous-whispers/sdk';
 import { Inbox } from './pages/Inbox';
 import { Landing } from './pages/Landing';
 import { Report } from './pages/Report';
