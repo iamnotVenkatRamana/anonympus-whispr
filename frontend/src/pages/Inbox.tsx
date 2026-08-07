@@ -28,7 +28,7 @@ import {
   importRecipientKeys,
   publicKeyFromSecret,
   type ExportedRecipientKeys,
-} from '../lib/crypto';
+} from '@anonymous-whispers/sdk';
 
 export const RECIPIENT_KEY_STORAGE = 'anonymous-whispers-recipient-key';
 

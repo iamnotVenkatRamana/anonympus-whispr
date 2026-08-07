@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { EncryptedReportForm } from '../components/EncryptedReportForm';
 import { PublicLedger } from '../components/PublicLedger';
 import type { WalletConnection } from '../components/WalletConnect';
-import { bytesToHex } from '../lib/crypto';
+import { bytesToHex } from '@anonymous-whispers/sdk';
 import { readPublicState, type PublicState } from '../lib/contract';
 
 type Props = {

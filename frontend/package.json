@@ -14,6 +14,7 @@
     "build": "npx tsc --noEmit || true"
   },
   "dependencies": {
+    "@anonymous-whispers/sdk": "*",
     "@midnight-ntwrk/dapp-connector-api": "^4.0.1",
     "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
     "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": "^4.1.1",

@@ -4,7 +4,7 @@ import { useRevealOnScroll } from '../../hooks/useRevealOnScroll';
 
 /**
  * The four calls, named as they exist in this repo today rather than as an
- * aspirational API. src/lib/crypto.ts really does export
+ * aspirational API. @anonymous-whispers/sdk really does export
  * generateRecipientKeypair, encryptToRecipient and decryptWithRecipientKey;
  * the submit step is the contract call in src/lib/contract.ts. Naming them
  * honestly matters more than naming them prettily, because a developer

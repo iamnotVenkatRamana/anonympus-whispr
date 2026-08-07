@@ -18,7 +18,7 @@ import {
   level3CallTx,
   type DeployedWhispersContract,
 } from '../lib/contract';
-import { encryptToRecipient } from '../lib/crypto';
+import { encryptToRecipient } from '@anonymous-whispers/sdk';
 
 type Props = {
   api: ConnectedAPI;

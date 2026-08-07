@@ -83,7 +83,7 @@ const ZK_CONFIG_BASE_URL = `${window.location.origin}/zk/anonymous-whispers`;
  * `{}`: there is nothing secret in this store to protect. A real secret would
  * be required the moment a witness is added. The recipient's curve25519
  * secret key is deliberately NOT in this store; it never touches the Midnight
- * SDK at all (see src/lib/crypto.ts).
+ * SDK at all (see @anonymous-whispers/sdk's envelope.ts).
  */
 const PRIVATE_STATE_PASSWORD = 'Frontend-Devnet-Development-Placeholder-1';
 
