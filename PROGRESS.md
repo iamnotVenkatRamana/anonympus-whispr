@@ -47,3 +47,22 @@ If it does reproduce in a real browser too, start with `abstract-level`/`browser
 - Preprod deploy (open thread #2 — start the sync early)
 - Round-trip verify against the live Preprod deployment once deployed (register → encrypt → submit → decrypt, real wallet)
 - Demo video
+
+## Aug 12 EOD checkpoint
+
+- CI/CD pipeline landed on this branch (099ccbd) — three-job workflow
+  (sdk/frontend/contract), badge in README. Live verification pending
+  first GitHub Actions run.
+- Deploy.ts stale-path bug fixed (1150ad9): 'contracts/managed' ->
+  'managed' after Phase 1 restructure. scripts/cli.ts:38 has the same
+  stale path but is out of scope and untouched.
+- Preprod deploy still running in tmux session 'deploy'. Wallet sync
+  hit a Wallet.Sync FiberFailure at ~363s elapsed, then continued showing
+  "Still syncing" past 1219s. Unclear if genuinely progressing or stuck.
+  Tomorrow: tmux attach -t deploy, check state. If stuck, restart proof
+  server (contract/: npm run proof-server:stop && npm run
+  proof-server:start) and re-run deploy — wallet state is persisted so
+  sync resumes.
+- Preview vs Preprod: both networks show protocolVersion 1000000 now;
+  ChargedState was fixed by pinning onchain-runtime-v3 (see 1150ad9's
+  parent). Preprod submission-network requirement still to confirm.
