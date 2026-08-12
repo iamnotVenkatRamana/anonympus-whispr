@@ -1,6 +1,6 @@
 # Anonymous Whispers
 
-![CI](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml/badge.svg?branch=level-4-restructure)](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml)
 
 > Submit an anonymous report on Midnight. Prove you did. Reveal nothing.
 
