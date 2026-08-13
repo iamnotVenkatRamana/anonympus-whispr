@@ -66,3 +66,33 @@ If it does reproduce in a real browser too, start with `abstract-level`/`browser
 - Preview vs Preprod: both networks show protocolVersion 1000000 now;
   ChargedState was fixed by pinning onchain-runtime-v3 (see 1150ad9's
   parent). Preprod submission-network requirement still to confirm.
+
+## Aug 13 checkpoint
+
+- Yesterday's tmux deploy died overnight (machine restart). Docker was
+  reinstalled, the proof server was started, and the deploy was re-launched
+  in a fresh tmux session. It is currently syncing to Preprod.
+- CI/CD landed green on `level-4-restructure` (commit 099ccbd). The stale
+  `main`-branch CI failure is from the deleted L3 workflow and can be
+  ignored; it will resolve when the branch is eventually merged to main.
+- SDK extraction is complete and pushed (phases 1 through 5, all
+  committed).
+- ChargedState fix is live (commit 1150ad9, `onchain-runtime-v3` pinned to
+  `3.0.0` via npm overrides).
+- Deploy path bug is fixed (commit c93b0df).
+- `contract/scripts/cli.ts:38` still has the stale `contracts/` path.
+  Deferred, not in scope for this docs pass.
+- Docs pass for Level 4 done this session (not committed yet): README.md
+  rewritten with Vision, Architecture diagram, Privacy Model, Tech Stack,
+  and the Onboarded Users table skeletons; docs/USAGE.md added; this
+  checkpoint appended. `sdk/src/chain.ts` still points at the Level 3
+  Preview address pending the Preprod cutover, called out explicitly in
+  the README so it doesn't read as already deployed.
+- Remaining Level 4 work:
+  1. Preprod deploy completes, then paste the address into README and take
+     a deployment screenshot.
+  2. X profile created and linked in README.
+  3. Google Form created and linked in README.
+  4. Demo video recorded.
+  5. Final round-trip verification against Preprod (register, encrypt,
+     submit, decrypt, real wallet).
