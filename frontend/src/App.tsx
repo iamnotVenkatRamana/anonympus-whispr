@@ -4,6 +4,7 @@ import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-do
 import { Logo } from './components/landing/Logo';
 import { WalletConnect, type WalletConnection } from './components/WalletConnect';
 import { CONTRACT_ADDRESS, NETWORK_ID } from '@anonymous-whispers/sdk';
+import { DeployContract } from './pages/DeployContract';
 import { Inbox } from './pages/Inbox';
 import { Landing } from './pages/Landing';
 import { Report } from './pages/Report';
@@ -53,6 +54,7 @@ function Shell() {
           <Routes>
             <Route path="/report" element={<Report connection={connection} />} />
             <Route path="/inbox" element={<Inbox connection={connection} />} />
+            <Route path="/deploy" element={<DeployContract connection={connection} />} />
           </Routes>
         </main>
 

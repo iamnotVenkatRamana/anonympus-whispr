@@ -21,7 +21,7 @@
  *   levelPrivateStateProvider     →  same, but IndexedDB-backed
  */
 import type { ConnectedAPI } from '@midnight-ntwrk/dapp-connector-api';
-import { findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
+import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { dappConnectorProofProvider } from '@midnight-ntwrk/midnight-js-dapp-connector-proof-provider';
 import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
@@ -34,11 +34,12 @@ import { Contract, ledger } from '@contract/anonymous-whispers/contract/index.js
 import { createDAppConnectorWalletProvider } from './dapp-connector-wallet-provider';
 
 /**
- * Level 3 targets Preview (the Preprod indexer is lagging again, confirmed by
- * the Midnight team on 2026-07-23). The Level 1/2 deployment is also on
- * Preview at 5f4f45e862ad11072d41a4aace8589f51248e0766510b431cab44c1825394ff0.
+ * Preprod: confirmed working with Lace + in-wallet proving 2026-08-13 (a
+ * deploy via /deploy completed in ~110s). Previously targeted Preview because
+ * the Preprod indexer was reported lagging by the Midnight team on
+ * 2026-07-23 — that was stale by the time this switched.
  */
-export const NETWORK_ID = 'preview';
+export const NETWORK_ID = 'preprod';
 
 // The ledger WASM reads a process-global network id when serializing
 // transactions; nothing in the browser path sets it (the Node path gets it
@@ -49,15 +50,25 @@ export const NETWORK_ID = 'preview';
 // operation.
 setNetworkId(NETWORK_ID);
 
+// Retired Preview deployment (deployed 2026-07-23, recorded in
+// .midnight-state.json under deployments.preview). Superseded 2026-08-14 when
+// NETWORK_ID moved to 'preprod'; kept here only as a fallback reference —
+// it is NOT a valid address on Preprod.
+//   const PREVIEW_CONTRACT_ADDRESS =
+//     'ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e';
+
 /**
- * Address of the Level 3 deployment on Preview (deployed 2026-07-23, also
- * recorded in .midnight-state.json under deployments.preview).
+ * TODO(admin): replace with the address printed by /deploy after deploying a
+ * fresh contract on Preprod. Until then this is a placeholder carried over
+ * from the retired Preview deployment above — it will not resolve on the
+ * Preprod indexer, so readPublicState() returns null and submissions fail
+ * until it is replaced.
  */
 export const CONTRACT_ADDRESS =
   'ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e';
 
-const INDEXER_URI = 'https://indexer.preview.midnight.network/api/v4/graphql';
-const INDEXER_WS_URI = 'wss://indexer.preview.midnight.network/api/v4/graphql/ws';
+const INDEXER_URI = 'https://indexer.preprod.midnight.network/api/v4/graphql';
+const INDEXER_WS_URI = 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';
 
 /** Matches PRIVATE_STATE_ID in contract/scripts/deploy.ts and cli.ts. */
 const PRIVATE_STATE_ID = 'anonymousWhispersPrivateState';
@@ -177,13 +188,16 @@ export const readPublicState = async (): Promise<PublicState | null> => {
 };
 
 /**
- * Assembles the providers and resolves the deployed contract.
+ * Assembles the browser provider set shared by connectToContract (below) and
+ * deployWhispersContract. Both need the same wallet-backed proving, indexer,
+ * and private-state wiring; only what they hand to Midnight.js afterwards
+ * (findDeployedContract vs deployContract) differs.
  *
  * @param api The connected wallet: the object `InitialAPI.connect()` returned.
  * @param accountId The wallet's unshielded address, used to scope private-state
  *                  storage so two wallets in one browser stay isolated.
  */
-export const connectToContract = async (api: ConnectedAPI, accountId: string) => {
+const buildBrowserProviders = async (api: ConnectedAPI, accountId: string) => {
   // The constructor's default fetchFunc is cross-fetch's re-export of
   // window.fetch, a detached reference the provider invokes as
   // `this.fetchFunc(...)`, which throws "Illegal invocation" in browsers.
@@ -199,7 +213,7 @@ export const connectToContract = async (api: ConnectedAPI, accountId: string) =>
   );
   const walletProvider = await createDAppConnectorWalletProvider(api);
 
-  const providers = {
+  return {
     privateStateProvider: levelPrivateStateProvider({
       privateStateStoreName: 'anonymous-whispers-state',
       accountId,
@@ -218,6 +232,11 @@ export const connectToContract = async (api: ConnectedAPI, accountId: string) =>
     walletProvider,
     midnightProvider: walletProvider,
   };
+};
+
+/** Resolves the deployed contract at CONTRACT_ADDRESS. */
+export const connectToContract = async (api: ConnectedAPI, accountId: string) => {
+  const providers = await buildBrowserProviders(api, accountId);
 
   return findDeployedContract(providers, {
     compiledContract,
@@ -229,6 +248,32 @@ export const connectToContract = async (api: ConnectedAPI, accountId: string) =>
 };
 
 export type DeployedWhispersContract = Awaited<ReturnType<typeof connectToContract>>;
+
+/**
+ * Deploys a brand new anonymous-whispers instance on Preprod from the
+ * browser. Used by the /deploy admin route; ordinary reporters and
+ * organizations never call this — they use connectToContract against the
+ * already-deployed CONTRACT_ADDRESS above.
+ *
+ * @param api The connected wallet: the object `InitialAPI.connect()` returned.
+ * @param accountId The wallet's unshielded address, used to scope private-state
+ *                  storage so two wallets in one browser stay isolated.
+ */
+export const deployWhispersContract = async (api: ConnectedAPI, accountId: string) => {
+  const providers = await buildBrowserProviders(api, accountId);
+
+  // No `args`: unlike contract/scripts/deploy.ts (which loads the contract
+  // dynamically via `import()`, widening its constructor-args type to
+  // `any[]` and requiring an explicit `[]`), `compiledContract` here is built
+  // from a statically-imported `Contract`, so its no-arg constructor is
+  // known at the type level and `args` is not a valid property at all.
+  return deployContract(providers, {
+    compiledContract,
+    privateStateId: PRIVATE_STATE_ID,
+    // No witnesses on this contract, so there is no private state to seed.
+    initialPrivateState: {},
+  });
+};
 
 /** The slice of a callTx result the UI consumes. */
 type CallTxOutcome = { public: { txId: string } };

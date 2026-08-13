@@ -24,6 +24,7 @@ export {
   isUnregisteredKey,
   readPublicState,
   connectToContract,
+  deployWhispersContract,
   level3CallTx,
 } from './chain';
 export type { DAppConnectorWalletProvider, DAppConnectorWalletAPI } from './dapp-connector-wallet-provider';
