@@ -72,36 +72,7 @@ encrypted blobs from a normal account leaks the transaction graph.
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  subgraph Reporter[Reporter's browser]
-    R1[Compose report]
-    R2[Fetch registered recipient key]
-    R3[Verify key fingerprint*<br/>*planned, L5]
-    R4[Generate ephemeral sender keypair]
-    R5[nacl.box encrypt<br/>512-byte envelope]
-    R6[submit_encrypted_report]
-  end
-  subgraph Chain[Midnight, Preprod]
-    C1[(recipient_public_key<br/>recipient_key_version)]
-    C2[(ciphertexts: List of Bytes 512)]
-    C3{{ZK proof per circuit call}}
-  end
-  subgraph Org[Organization's browser]
-    O1[Generate recipient keypair]
-    O2[register_recipient]
-    O3[Read ciphertexts]
-    O4[Decrypt locally with secret key]
-  end
-  R2 -->|indexer read| C1
-  R6 -->|circuit call + ZK proof| C2
-  O1 --> O2
-  O2 -->|circuit call + ZK proof| C1
-  C2 -->|indexer read| O3
-  O3 --> O4
-  C3 -.- R6
-  C3 -.- O2
-```
+![Anonymous Whispers architecture](docs/architecture.svg)
 
 The contract also exposes a legacy `submit_report(content_hash, report_content)`
 circuit (one-way hash commitment, no encryption) preserved from Level 1/2 for
