@@ -1,12 +1,12 @@
 # Anonymous Whispers
 
-[![CI](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml/badge.svg?branch=level-4-restructure)](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml)
+[![CI](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml/badge.svg)](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml)
 
 > Submit an anonymous report on Midnight. Prove you did. Reveal nothing.
 
 ## Live Demo
 
-`<placeholder: TBD, live Vercel URL>`
+[https://anonymous-whispers.vercel.app](https://anonymous-whispers.vercel.app)
 
 ## Contract Address
 
@@ -236,11 +236,11 @@ for both reporters and organizations.
 
 ## Product X Profile
 
-`<placeholder: TBD, e.g. @AnonWhispers, add after creating the account>`
+[@AnonymousWhispr](https://x.com/AnonymousWhispr)
 
 ## User Feedback
 
-Submitted via: `<placeholder: TBD, Google Form URL>`
+Submitted via: [Anonymous Whispers Feedback Form](https://forms.gle/gC3inyFCvDzYvcq78)
 
 ### Onboarded Users (All)
 
