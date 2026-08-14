@@ -14,6 +14,7 @@
     "build": "npx tsc --noEmit || true"
   },
   "dependencies": {
+    "@anonymous-whispers/sdk": "*",
     "@midnight-ntwrk/dapp-connector-api": "^4.0.1",
     "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
     "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": "^4.1.1",
@@ -26,6 +27,9 @@
     "@midnight-ntwrk/midnight-js-utils": "4.1.1",
     "buffer": "^6.0.3",
     "events": "^3.3.0",
+    "framer-motion": "^13.0.0",
+    "gsap": "^3.15.0",
+    "lenis": "^1.3.26",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",

@@ -1,6 +1,8 @@
 /**
  * Client-side asymmetric encryption for the two-way whistleblowing flow.
  *
+ * Moved verbatim from frontend/src/lib/crypto.ts (Level 4 SDK extraction).
+ *
  * Scheme: nacl.box (curve25519-xsalsa20-poly1305) with a FRESH ephemeral
  * sender keypair per submission. tweetnacl has no libsodium-style sealed box,
  * so this is the standard emulation: generate an ephemeral keypair, box with
@@ -35,14 +37,6 @@ const EPHEMERAL_KEY_BYTES = nacl.box.publicKeyLength; // 32
 const NONCE_BYTES = nacl.box.nonceLength; // 24
 const BOX_BYTES = PLAINTEXT_BYTES + nacl.box.overheadLength; // 256 + 16 = 272
 const PAYLOAD_BYTES = EPHEMERAL_KEY_BYTES + NONCE_BYTES + BOX_BYTES; // 328
-
-export type RecipientKeypair = {
-  publicKey: Uint8Array;
-  secretKey: Uint8Array;
-};
-
-/** New inbox identity for an organization. Generated locally, never sent. */
-export const generateRecipientKeypair = (): RecipientKeypair => nacl.box.keyPair();
 
 /**
  * Encrypts a report to the recipient's public key and returns the fixed
@@ -115,55 +109,3 @@ export const decodePaddedReport = (padded: Uint8Array): string => {
   while (end > 0 && padded[end - 1] === 0) end -= 1;
   return new TextDecoder().decode(padded.subarray(0, end));
 };
-
-const toHex = (bytes: Uint8Array): string =>
-  Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
-
-const fromHex = (hex: string): Uint8Array => {
-  const clean = hex.trim().toLowerCase().replace(/^0x/, '');
-  if (clean.length % 2 !== 0 || /[^0-9a-f]/.test(clean)) {
-    throw new Error('Not a valid hex string.');
-  }
-  const bytes = new Uint8Array(clean.length / 2);
-  for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(clean.slice(i * 2, i * 2 + 2), 16);
-  }
-  return bytes;
-};
-
-export type ExportedRecipientKeys = {
-  publicKeyHex: string;
-  secretKeyHex: string;
-};
-
-/** Hex form for display, download, and localStorage. */
-export const exportRecipientKeys = (keypair: RecipientKeypair): ExportedRecipientKeys => ({
-  publicKeyHex: toHex(keypair.publicKey),
-  secretKeyHex: toHex(keypair.secretKey),
-});
-
-/** Reverse of exportRecipientKeys. Throws on malformed or wrong-length hex. */
-export const importRecipientKeys = (
-  publicKeyHex: string,
-  secretKeyHex: string,
-): RecipientKeypair => {
-  const publicKey = fromHex(publicKeyHex);
-  const secretKey = fromHex(secretKeyHex);
-  if (publicKey.length !== nacl.box.publicKeyLength) {
-    throw new Error('Public key must be 32 bytes (64 hex characters).');
-  }
-  if (secretKey.length !== nacl.box.secretKeyLength) {
-    throw new Error('Secret key must be 32 bytes (64 hex characters).');
-  }
-  return { publicKey, secretKey };
-};
-
-/**
- * Derives the public key from a secret key, so the inbox can accept a pasted
- * secret key alone and still verify it against the on-chain public key.
- */
-export const publicKeyFromSecret = (secretKey: Uint8Array): Uint8Array =>
-  nacl.box.keyPair.fromSecretKey(secretKey).publicKey;
-
-export const bytesToHex = toHex;
-export const hexToBytes = fromHex;

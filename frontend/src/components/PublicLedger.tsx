@@ -10,7 +10,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 
-import { readPublicState, type PublicState } from '../lib/contract';
+import { readPublicState, type PublicState } from '@anonymous-whispers/sdk';
 
 const toHexString = (bytes: Uint8Array) =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
@@ -46,19 +46,27 @@ export function PublicLedger({ refreshToken }: Props) {
   const hasReport = state !== null && !EMPTY_HASH.test(latestHash);
 
   return (
-    <section className="rounded-b-2xl border-t-2 border-edge-lit bg-surface/70 p-8">
-      <h2 className="text-sm tracking-[0.25em] text-signal uppercase">On-chain record</h2>
+    <section className="surface-dark p-8">
+      <h2 className="eyebrow eyebrow-dark">on-chain record</h2>
 
-      {loading && <p className="mt-5 text-base text-muted">Reading public state...</p>}
+      {loading && <p className="mt-5 text-base text-white/55">Reading public state...</p>}
 
       {error && (
-        <p className="mt-5 text-base text-warn">
-          Could not reach the indexer. {error}
-        </p>
+        /*
+          The live failure state. Message text and the surrounding condition are
+          unchanged; only the box around them is new. The indexer's own string
+          is machine output, so it is set in mono under the prose line.
+        */
+        <div className="notice-quiet mt-5 px-5 py-4" role="alert">
+          <p className="text-base font-medium text-white">Could not reach the indexer.</p>
+          <p className="mono mt-2 text-[12px] leading-relaxed break-words text-white/60">
+            {error}
+          </p>
+        </div>
       )}
 
       {!loading && !error && state === null && (
-        <p className="mt-5 text-base text-muted">
+        <p className="mt-5 text-base leading-relaxed text-white/55">
           Contract not found on this network yet. It appears here once the Level 3
           deployment lands.
         </p>
@@ -67,20 +75,23 @@ export function PublicLedger({ refreshToken }: Props) {
       {state && (
         <div className="mt-7 flex flex-col gap-7">
           <div>
-            <p className="text-sm text-muted">Reports submitted</p>
-            <p className="mt-2 font-serif text-7xl font-medium text-signal tabular-nums">
+            <p className="eyebrow eyebrow-dark">reports submitted</p>
+            <p className="display mt-3 text-7xl font-semibold text-white tabular-nums">
               {state.counter.toString()}
             </p>
           </div>
 
           <div>
-            <p className="text-sm text-muted">Latest report hash</p>
-            <p className="mt-2 font-mono text-sm leading-relaxed break-all text-dim">
+            <p className="eyebrow eyebrow-dark">latest report hash</p>
+            <p className="mono mt-3 text-sm leading-relaxed break-all text-white/70">
               {hasReport ? latestHash : 'None yet'}
             </p>
           </div>
 
-          <p className="border-t border-edge pt-6 text-base leading-relaxed text-muted">
+          <p
+            className="border-t border-white/10 pt-6 text-base leading-relaxed"
+            style={{ color: 'var(--muted-dark)' }}
+          >
             This is the entire public record. Report contents are never written to the
             chain, so they cannot be read back, not by us, not by anyone.
           </p>

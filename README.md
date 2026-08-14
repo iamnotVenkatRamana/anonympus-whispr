@@ -1,207 +1,283 @@
 # Anonymous Whispers
 
-![CI](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml/badge.svg?branch=level-4-restructure)](https://github.com/Emmanuellsensai/anonymous-whispers/actions/workflows/ci.yml)
 
 > Submit an anonymous report on Midnight. Prove you did. Reveal nothing.
 
 ## Live Demo
 
-[https://anonymous-whispers.vercel.app](https://anonymous-whispers.vercel.app)
+`<placeholder: TBD, live Vercel URL>`
 
 ## Contract Address
 
-| Network | Level | Address |
-|---------|-------|---------|
-| Preview | 3 | `ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e` |
-| Preview | 1-2 | `5f4f45e862ad11072d41a4aace8589f51248e0766510b431cab44c1825394ff0` |
+| Network | Address |
+|---------|---------|
+| Preprod | `e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9` |
 
-Both Level 2 and Level 3 use Preview rather than Preprod. During the Level 2
-build period Preprod was unavailable, and during the Level 3 build period its
-indexer was lagging intermittently; both issues were confirmed by the Midnight
-team. Preview remained healthy throughout, so all deployments target Preview.
+Deployed via the browser at `/deploy` using the 1am wallet, which sponsors
+DUST. Lace also works, but requires DUST designation to complete first,
+which may take time on a congested Preprod.
 
-## New in Level 3
+Deployment screenshot: `deploy-level4.png`
 
-Level 3 turns the one-way privacy primitive into a two-way encrypted reporting
-system with two roles:
+## Vision
 
-- An organization opens `/inbox`, generates a curve25519 keypair in the
-  browser, and registers the public key on-chain via the `register_recipient`
-  circuit. The secret key never leaves their machine.
-- A reporter opens `/report`, writes a report, and the app encrypts it in the
-  browser to the registered public key (nacl.box with a fresh ephemeral sender
-  key per submission, so not even the recipient can correlate senders). The
-  sealed 512-byte envelope is published on-chain via `submit_encrypted_report`
-  together with its SHA-256 hash as an auditable commitment.
-- Back in `/inbox`, the organization decrypts every submission locally with
-  their secret key. Nobody else, including us and including Midnight, can read
-  a single byte.
+Anonymous Whispers is cryptographic whistleblowing infrastructure for
+organizations, built as a reusable Midnight primitive rather than a one-off
+app. An organization (a compliance officer, ethics team, ombudsperson, or
+board) registers as a recipient by generating a curve25519 keypair in the
+browser and publishing only the public half on-chain. Reporters, including
+employees, contractors, and customers, encrypt a report to that public key
+entirely in their own browser before anything is submitted. The sender's
+identity is cryptographically unrecoverable: every submission goes out under
+a single-use ephemeral keypair that's discarded immediately after
+encryption, so not even the recipient can link two reports to the same
+person.
 
-The Level 1/2 `submit_report` circuit is preserved unchanged for backward
-compatibility.
+The sample app in this repo (reporter/inbox flows on Midnight Preprod) is the
+flagship whistleblowing use case, but the underlying `@anonymous-whispers/sdk`
+is deliberately generic: any product needing "many untrusted submitters, one
+accountable recipient, content that must stay sealed" fits the same shape,
+including consumer complaint channels, government tip lines, grantee
+reporting to funders, and journalism source protection.
 
-## What This Does
+## Key Features
 
-Anonymous Whispers is a whistleblowing dApp with two clearly separated views.
+- Encrypt-to-recipient in the browser (curve25519 / tweetnacl `nacl.box`)
+- Fresh throwaway ephemeral sender keypair per message (sender unlinkability)
+- 512-byte fixed-shape sealed envelope (no metadata leak via ciphertext size)
+- Only the recipient's secret key can decrypt: not us, not Midnight
+- Reusable `@anonymous-whispers/sdk` workspace package consumed by the sample app
+- Fingerprint verification path for reporters (planned, L5)
 
-Reporters (`/report`): write a report, and the app encrypts it client-side to
-the organization's registered public key before anything else happens. A
-zero-knowledge proof is generated in the user's Lace wallet, and the wallet
-balances, signs, and submits the transaction. What lands on-chain is a sealed
-envelope that is indistinguishable from random bytes without the recipient's
-key, plus the envelope's SHA-256 hash and a public counter.
+## What This Product Does
 
-Organizations (`/inbox`): generate and register a recipient keypair, then read
-submissions. Decryption happens entirely in the browser with the locally held
-secret key.
+The problem: private reporting channels need sender identity to be
+unrecoverable, not merely "policy-protected." Hosted tip-line SaaS still has
+an operator who can log IPs, hold a database, and be subpoenaed or breached;
+anonymity there is a promise about behavior, not a property of the system.
 
-The plaintext report never leaves the reporter's browser. It is dropped from
-memory the moment proving begins, and there is no code path that could
-transmit, store, or log it in readable form.
+Who uses it: organizations subject to whistleblower-protection regimes such
+as the EU Whistleblower Directive, SOX, and ISO 37002, plus adjacent cases
+like healthcare incident reporting, HR complaint channels, and investigative
+journalism source protection.
+
+Why Midnight: zero-knowledge proofs let a reporter prove a submission is
+well-formed and correctly encrypted to the currently registered key without
+revealing who sent it or what it says, and the ciphertext itself can live
+openly in public contract state, auditable by anyone, readable by no one but
+the recipient. That combination of public verifiability and selective
+disclosure isn't available on a fully transparent chain, where posting even
+encrypted blobs from a normal account leaks the transaction graph.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  subgraph Reporter[Reporter's browser]
+    R1[Compose report]
+    R2[Fetch registered recipient key]
+    R3[Verify key fingerprint*<br/>*planned, L5]
+    R4[Generate ephemeral sender keypair]
+    R5[nacl.box encrypt<br/>512-byte envelope]
+    R6[submit_encrypted_report]
+  end
+  subgraph Chain[Midnight, Preprod]
+    C1[(recipient_public_key<br/>recipient_key_version)]
+    C2[(ciphertexts: List of Bytes 512)]
+    C3{{ZK proof per circuit call}}
+  end
+  subgraph Org[Organization's browser]
+    O1[Generate recipient keypair]
+    O2[register_recipient]
+    O3[Read ciphertexts]
+    O4[Decrypt locally with secret key]
+  end
+  R2 -->|indexer read| C1
+  R6 -->|circuit call + ZK proof| C2
+  O1 --> O2
+  O2 -->|circuit call + ZK proof| C1
+  C2 -->|indexer read| O3
+  O3 --> O4
+  C3 -.- R6
+  C3 -.- O2
+```
+
+The contract also exposes a legacy `submit_report(content_hash, report_content)`
+circuit (one-way hash commitment, no encryption) preserved from Level 1/2 for
+backward compatibility; it's not part of the two-way flow diagrammed above.
 
 ## Privacy Model
 
-What is PUBLIC:
+What an observer of the chain can, and cannot, learn.
 
-- The counter of total reports submitted.
-- The recipient's public key and its version number.
-- Each encrypted 512-byte envelope (unreadable without the recipient's key).
-- The SHA-256 hash of each envelope (auditable commitment).
-- The wallet address that signed, visible to anyone inspecting the transaction
-  on-chain.
+### What is PUBLIC (on-chain, anyone can read)
 
-What is PRIVATE:
+- The registered organization's public key (`recipient_public_key`) and its
+  version counter (`recipient_key_version`)
+- That a report was submitted: a new 512-byte envelope appended to
+  `ciphertexts`
+- The envelope's exact size (fixed 512 bytes for every report, so size leaks
+  nothing)
+- A commitment hash of the latest submission (`latest_report_hash`)
+- The aggregate submission `counter`
+- Rough timing (block inclusion time) and the wallet address that signed the
+  transaction
 
-- The report content, always. It exists in plaintext only in the reporter's
-  browser before encryption and in the recipient's browser after decryption.
-- The recipient's private key: PRIVATE, held only by the recipient
-  client-side. Never transmitted, never part of any transaction, never seen by
-  any server.
+### What is PRIVATE (never on-chain, never transmitted)
 
-What the reporter PROVES without revealing:
+- The report contents: encrypted in the browser before anything leaves it;
+  plaintext exists only in the reporter's browser pre-encryption and the
+  recipient's browser post-decryption
+- The reporter's identity as a sender: no persistent sender key exists
+  anywhere; a fresh ephemeral keypair is generated per message and discarded
+  immediately after encrypting
+- Any link between two reports from the same reporter: fresh ephemeral keys
+  per submission mean envelopes cannot be correlated to each other
+- The recipient's secret key, generated and held client-side only, never
+  placed in a transaction, request, or log
 
-- That they submitted a well-formed envelope whose published hash matches.
-  This proves a report exists without revealing what it says or who sent it.
+### What the reporter PROVES without revealing
 
-## Privacy Claim
+- That the submission was correctly formed and disclosed to the ledger via
+  the `submit_encrypted_report` circuit
+- Nothing about the report's contents or their own identity
 
-An on-chain observer sees that a report was submitted and can fetch the
-ciphertext, but cannot recover the content. The recipient can read the content
-but cannot identify the sender: every envelope is encrypted under a fresh
-ephemeral key that is destroyed after use. The only way for content to become
-known is if the recipient or submitter chooses to share it.
-
-## Vision and Roadmap
-
-Phase 1 (shipped in Level 2): the privacy primitive. A submitter proves they
-submitted content matching a published SHA-256 hash without revealing the
-content.
-
-Phase 2 (shipped in Level 3): the two-way encrypted flow. On-chain recipient
-key registration, client-side nacl.box encryption to that key, a public
-ciphertext inbox, and client-side decryption for the recipient.
-
-Phase 3+ (Mainnet concerns, see PROPOSAL.md): access control on recipient
-registration, key rotation with retained history, inbox pagination, spam
-economics and rate limiting, and multi-recipient threshold decryption for
-boards rather than individuals.
-
-## Product Proposal
-
-The full product proposal, including the data disclosure model and Mainnet
-feasibility analysis, is in [PROPOSAL.md](./PROPOSAL.md).
+`register_recipient` is currently unrestricted in this contract: any caller
+can overwrite the registered key, so the version counter exists so
+reporters can detect a key change and re-verify out-of-band before trusting
+it. Owner-gated registration is scoped to Level 4/5 (see `PROPOSAL.md`).
 
 ## Tech Stack
 
-- Midnight Network (Preview)
-- Compact language
-- Midnight.js SDK 4.1.x
-- tweetnacl (curve25519-xsalsa20-poly1305)
-- React 19 + react-router-dom
-- Vite 8
-- TypeScript
-- Tailwind CSS
-- Lace wallet extension
+**Contract**: Compact (`pragma language_version >= 0.23`), compiled via the
+Compact toolchain installer in CI; `@midnight-ntwrk/compact-runtime` 0.16.0;
+local proof server `midnightntwrk/proof-server:8.1.0` (Docker).
+
+**SDK** (`@anonymous-whispers/sdk`): TypeScript, `tweetnacl` for the
+crypto core, `@midnight-ntwrk/*` 4.1.1 family (`midnight-js-contracts`,
+`midnight-js-indexer-public-data-provider`, `midnight-js-level-private-state-provider`,
+`midnight-js-network-id`, `midnight-js-protocol`, `midnight-js-types`,
+`midnight-js-utils`), `@midnight-ntwrk/dapp-connector-api` ^4.0.1. Root
+`package.json` pins `@midnight-ntwrk/onchain-runtime-v3` to `3.0.0` (and
+`ledger-v8` to `8.1.0`, `wallet-sdk` to `1.2.0`) via npm `overrides` to
+dedupe conflicting versions across the workspace.
+
+**Frontend**: React 19 with `react-router-dom` 7, Vite 8, TypeScript,
+Tailwind CSS 4, Lace or 1am wallet (1am recommended — sponsors DUST out of
+the box) via `@midnight-ntwrk/dapp-connector-api`.
 
 ## Prerequisites
 
-- Lace wallet browser extension installed and set to the Preview network
-- Preview tNIGHT balance funded from
-  [https://midnight-tmnight-preview.nethermind.dev](https://midnight-tmnight-preview.nethermind.dev)
-- Preview tDUST auto-generates from tNIGHT (allow a few minutes after funding)
-- For local development: Node.js v22+, npm
+- Node.js v22+
+- Docker (the proof server runs in a container; `contract/docker-compose.yml`)
+- Lace or 1am wallet browser extension (1am recommended — sponsors DUST out
+  of the box), set to the **Preprod** network
+- Preprod tNIGHT from the faucet at
+  [https://midnight-tmnight-preprod.nethermind.dev](https://midnight-tmnight-preprod.nethermind.dev)
+- Linux (the Compact compiler toolchain used in CI targets Ubuntu; see
+  `PROGRESS.md` for the Windows-specific caveat around headless rendering)
 
-## Run Locally
+## Setup & Run Locally
+
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/Emmanuellsensai/anonymous-whispers.git
 cd anonymous-whispers
-npm install --legacy-peer-deps
-npm run dev
+npm install
 ```
 
-Then open http://localhost:5173. The landing page offers both entry points:
+### 2. Start the proof server
 
-- `/report` is the reporter view: submit an encrypted report.
-- `/inbox` is the organization view: register as recipient and read
-  decrypted submissions.
+```bash
+cd contract
+docker compose up -d proof-server
+```
 
-Connect Lace (Preview) on either view to transact. The frontend needs no proof
-server and no Docker: proving happens inside the Lace wallet.
+### 3. Compile the contract
+
+```bash
+npm run --workspace=contract compile
+```
+
+### 4. Run the frontend
+
+```bash
+npm run --workspace=frontend dev
+```
+
+Open [http://localhost:5173](http://localhost:5173). `/report` is the
+reporter view; `/inbox` is the organization view.
 
 ## Run Tests
 
 ```bash
-npm run test
+npm run --workspace=sdk test        # crypto round-trip, unlinkability, envelope shape
+npm run --workspace=contract test   # circuit tests plus Level 3 encryption-layer tests
 ```
-
-Covers the compiled Compact circuits (submission logic, state transitions, and
-a privacy assertion that the witness never reaches the public ledger) plus the
-Level 3 encryption layer (round-trip, wrong-key rejection, corrupt-ciphertext
-handling, envelope format, and sender unlinkability). The Level 3 circuit
-tests activate automatically once `npm run compile` has produced the
-three-circuit build; on machines without the Compact toolchain they are
-skipped and CI runs them instead.
 
 ## CI/CD
 
-Every push to `main` or `level-3` (and every PR to `main`) runs
-`.github/workflows/ci.yml`: install, Compact toolchain setup, contract
-compile, TypeScript type check, tests, and frontend build. Deployment is
-deliberately excluded from CI; it would spend real tDUST and change the live
-contract address.
+A three-job GitHub Actions pipeline (`.github/workflows/ci.yml`) runs on
+push and PR to `main` and `level-4-restructure`:
 
-## Demo Video
+- `sdk`: `tsc --noEmit` plus vitest
+- `frontend`: `tsc --noEmit` plus `vite build` (via the ZK-asset sync step)
+- `contract`: install the Compact toolchain, compile, vitest
 
-Watch the Level 3 demo: [LEVEL 3 DEMO](https://youtu.be/LjMqepbm-84)
+Live status: see the CI badge above. Deployment is deliberately excluded
+from CI: it spends real tDUST and changes the live contract address.
 
-The video shows the full two-way flow: an organization generates a recipient
-keypair and registers the public key on-chain, a reporter verifies that key,
-encrypts a report to it, and submits it, and the organization decrypts the
-submission client-side in the inbox. It also shows the test suite passing and
-the CI pipeline green.
+## Usage Guide
 
-Level 2 demo (single-direction hash submission): https://youtu.be/1C2ypyz2Qoc
+See [`docs/USAGE.md`](docs/USAGE.md) for a plain-English, step-by-step guide
+for both reporters and organizations.
 
-## Level 1 (Contract Deployment)
+## Product X Profile
 
-Level 1 (the Compact contract and backend deployment) is complete and
-reviewed. The contract source is at `contracts/anonymous-whispers.compact` and
-the deployment CLI is at `src/cli.ts` (run with `npm run cli`). The offline
-test suite runs with `npm test`, and `npm run deploy -- --network preview`
-deploys a fresh instance against a local proof server
-(`npm run proof-server:start`).
+`<placeholder: TBD, e.g. @AnonWhispers, add after creating the account>`
 
-## Screenshots
+## User Feedback
 
-Level 3 contract compile (three circuits):
+Submitted via: `<placeholder: TBD, Google Form URL>`
 
-![Level 3 Compile Output](./compile-level3.png)
+### Onboarded Users (All)
 
-Level 3 deployment to Preview:
+| User ID | User Name | Email | Wallet Address | Feedback Summary |
+|---------|-----------|-------|-----------------|-------------------|
+| _(none yet, filled in after onboarding)_ | | | | |
 
-![Level 3 Deploy Output](./deploy-level3.png)
+### Feedback Implementation (Selected)
 
-Level 3 test suite (circuits plus encryption layer):
+| User ID | User Name | Email | Wallet Address | Feedback Summary | Improvements Made | Commit ID |
+|---------|-----------|-------|-----------------|-------------------|--------------------|-----------|
+| _(none yet, filled in after acting on feedback)_ | | | | | | |
 
-![Level 3 Test Output](./tests-level3.png)
+## Future Scope
+
+- Owner-gated `register_recipient` with reporter-visible rotation detection,
+  so a legitimate key rotation is distinguishable from a hostile overwrite
+  (L4/L5)
+- Inbox pagination as submission volume grows (L4)
+- Threshold decryption across a board rather than a single recipient key, so
+  no individual can read reports alone or be a single point of failure (L5)
+- Rate limiting / spam economics for the submission list (L5)
+- Fingerprint verification UI so reporters can check the registered key
+  against an out-of-band published fingerprint before encrypting (L5)
+- Hosted onboarding and a documented escalation path for the case where the
+  registered recipient is complicit (L6)
+- A second sample app in a different domain (e.g. healthcare incident
+  reporting) to prove the SDK is reusable beyond this one product (L6)
+- Publish `@anonymous-whispers/sdk` as a standalone npm package (post-L6,
+  currently an unpublished workspace package)
+
+## Product Proposal
+
+The full product proposal, including the data disclosure model,
+key-verification trust model, and Mainnet feasibility analysis, is in
+[PROPOSAL.md](./PROPOSAL.md).
+
+## License
+
+MIT

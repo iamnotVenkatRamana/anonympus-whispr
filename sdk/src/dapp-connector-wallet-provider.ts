@@ -2,6 +2,9 @@
  * Bridges the Lace DApp Connector API to the `WalletProvider` / `MidnightProvider`
  * interfaces that `MidnightProviders` expects.
  *
+ * Moved verbatim from frontend/src/lib/dapp-connector-wallet-provider.ts
+ * (Level 4 SDK extraction).
+ *
  * These two sides do not speak the same language, which is the whole reason this
  * file exists:
  *
@@ -15,9 +18,10 @@
  * So every call round-trips through `serialize()` → hex → connector → hex →
  * `Transaction.deserialize(...)`.
  *
- * The Node-side equivalent of this adapter is `createProviders` in src/deploy.ts,
- * which talks to the wallet-sdk's rich object API instead and therefore needs
- * none of this. Do not try to share code between them.
+ * The Node-side equivalent of this adapter is `createProviders` in
+ * contract/scripts/deploy.ts, which talks to the wallet-sdk's rich object API
+ * instead and therefore needs none of this. Do not try to share code between
+ * them.
  */
 import type { ConnectedAPI } from '@midnight-ntwrk/dapp-connector-api';
 import {
@@ -36,7 +40,8 @@ import { fromHex, toHex } from '@midnight-ntwrk/midnight-js-utils';
 
 /**
  * `MidnightProviders` takes `walletProvider` and `midnightProvider` separately,
- * but a single object can satisfy both, which is what src/deploy.ts does too.
+ * but a single object can satisfy both, which is what contract/scripts/deploy.ts
+ * does too.
  */
 export type DAppConnectorWalletProvider = WalletProvider & MidnightProvider;
 

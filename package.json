@@ -1,0 +1,18 @@
+{
+  "name": "anonymous-whispers",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "contract",
+    "frontend",
+    "sdk"
+  ],
+  "overrides": {
+    "@midnight-ntwrk/wallet-sdk": "1.2.0",
+    "@midnight-ntwrk/ledger-v8": "8.1.0",
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

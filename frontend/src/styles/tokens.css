@@ -1,0 +1,361 @@
+/**
+ * "Encrypted midnight" design tokens: pure monochrome, two worlds.
+ *
+ * The reporter's world is dark/encrypted (private witness); the on-chain
+ * world is light/verifiable (public ledger). No purple, no indigo, no
+ * default blue. The one accent is contrast itself. These are plain CSS
+ * custom properties, not Tailwind @theme colors: Tailwind here is layout and
+ * spacing only, so components consume these directly (var(--ink), etc.)
+ * rather than through generated utility classes.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Readex+Pro:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --ink: #000000;
+  --ink-2: #0a0a0b;
+  --ink-surface: #141416;
+  --ink-line: #26262a;
+  --paper: #f4f5f6;
+  --paper-surface: #ffffff;
+  --paper-line: #dadce0;
+  --text-dark: #f5f6f7;
+  --muted-dark: rgb(255 255 255 / 0.62);
+  --text-light: #0a0a0b;
+  --muted-light: rgb(10 10 11 / 0.6);
+  --hair: rgb(255 255 255 / 0.4);
+  --signal: #ffffff;
+
+  /*
+   * Three roles, three faces. Fraunces sets everything meant to be looked at
+   * rather than read (headlines, section titles), Readex Pro carries running
+   * text and the small labels, IBM Plex Mono carries anything the machine
+   * produced.
+   *
+   * Fraunces is also what the Shell already uses for the heading on /report
+   * and /inbox, so the landing and the app now speak with the same voice
+   * instead of two unrelated ones.
+   */
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Readex Pro', system-ui, -apple-system, sans-serif;
+  --font-crypto: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Light-world depth. Shadows are wide, low-opacity and stacked rather than
+     one dark blur, which is what keeps a raised card from looking stuck on. */
+  --paper-deep: #e9ebee;
+  --shadow-rest:
+    0 1px 2px rgb(10 10 11 / 0.04), 0 10px 24px -14px rgb(10 10 11 / 0.16),
+    0 28px 56px -32px rgb(10 10 11 / 0.14);
+  --shadow-lift:
+    0 2px 4px rgb(10 10 11 / 0.05), 0 18px 36px -16px rgb(10 10 11 / 0.2),
+    0 40px 72px -36px rgb(10 10 11 / 0.18);
+  --edge-light: inset 0 0 0 1px rgb(10 10 11 / 0.055);
+}
+
+/*
+ * The cryptographic layer: hashes, addresses, ciphertext, ledger labels.
+ * Its own class rather than Tailwind's font-mono, which index.css still maps
+ * to the old ink-and-gold stack that /report and /inbox use.
+ */
+.mono {
+  font-family: var(--font-crypto);
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  text-transform: lowercase;
+  /*
+   * Fraunces is a high-contrast serif, so it needs the opposite treatment to
+   * the grotesque it replaced: almost no negative tracking (serifs already
+   * bridge the gaps, and pulling them together closes the counters), and a
+   * little more leading because the ascenders and descenders are longer.
+   *
+   * opsz 144 pins the optical-size axis to the top of its range. Left on
+   * auto it tracks font-size, which is roughly right, but stating it makes
+   * the display cut deliberate: thinner hairlines, sharper serifs, tighter
+   * spacing than the text cut would give.
+   */
+  letter-spacing: -0.015em;
+  line-height: 0.98;
+  font-variation-settings: 'opsz' 144;
+}
+
+/*
+ * Display type is scoped to the landing tree, not applied to h1/h2/h3
+ * globally: the Shell that wraps /report and /inbox sets its own Fraunces
+ * heading directly, and this pass is not allowed to change those pages.
+ *
+ * opsz 96 rather than the hero's 144: section headings run a third of the
+ * hero's size, and the very top of the axis gets spindly below display size.
+ */
+.landing h1,
+.landing h2,
+.landing h3 {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96;
+  letter-spacing: -0.01em;
+}
+
+/*
+ * Section eyebrows. These are labels, not data, so they belong to the body
+ * face: mono at 11px reads thin and pretends to be machine output when it is
+ * just a heading's kicker. Mono is reserved for hashes, addresses, function
+ * names, byte counts and block numbers.
+ */
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted-light);
+}
+
+/* The same label on the dark side of the page. */
+.eyebrow-dark {
+  color: var(--muted-dark);
+}
+
+/*
+ * The light world: one continuous surface across every section that follows
+ * the morph, rather than a stack of independently white blocks. It opens on
+ * exactly the paper value the morph resolves to, so the handover is a
+ * gradient rather than a seam, then deepens toward the footer.
+ */
+.light-world {
+  position: relative;
+  background:
+    radial-gradient(120% 60% at 50% 0%, #f8f9fa 0%, rgb(248 249 250 / 0) 60%),
+    linear-gradient(180deg, var(--paper) 0%, #eef0f2 55%, var(--paper-deep) 100%);
+}
+
+/*
+ * Faint tonal grain so the light half has air in it, the way the dark half
+ * gets texture from the footage. Inline SVG turbulence: no request, no
+ * asset, and it scales to any viewport.
+ */
+.light-world::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* Everything inside has to sit above the grain layer. */
+.light-world > * {
+  position: relative;
+  z-index: 1;
+}
+
+/*
+ * A raised card. The 1px edge is an inset shadow rather than a border so it
+ * never adds to the box size, and it is tinted from the ink rather than being
+ * a gray hairline.
+ */
+.surface {
+  background: var(--paper-surface);
+  border-radius: 1.5rem;
+  box-shadow: var(--edge-light), var(--shadow-rest);
+  transition:
+    transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.surface-lift:hover,
+.surface-lift:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: var(--edge-light), var(--shadow-lift);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .surface {
+    transition: none;
+  }
+
+  .surface-lift:hover,
+  .surface-lift:focus-visible {
+    transform: none;
+    box-shadow: var(--edge-light), var(--shadow-lift);
+  }
+}
+
+/*
+ * ── The app pages (/report, /inbox) ──────────────────────────────────────
+ *
+ * These live in the dark world: the reporter is composing something private,
+ * and the landing's paper half is reserved for what the chain can see. Same
+ * construction as .surface, inverted. The edge is a light inset rather than a
+ * border, so it reads as a lit top edge instead of a drawn outline, and the
+ * shadow stack is deeper because black needs more separation than paper.
+ */
+.surface-dark {
+  background: var(--ink-surface);
+  border-radius: 1.5rem;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    0 1px 2px rgb(0 0 0 / 0.6),
+    0 20px 44px -24px rgb(0 0 0 / 0.9);
+}
+
+/* The same box for something that has not happened yet: no fill, edge only. */
+.surface-dark-empty {
+  border-radius: 1.5rem;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09);
+}
+
+/* Display type outside the .landing tree (the Shell and the app pages). */
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: 'opsz' 96;
+  letter-spacing: -0.01em;
+}
+
+/* Inputs and textareas. */
+.field {
+  background: var(--ink-2);
+  border-radius: 1rem;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.09);
+  color: var(--text-dark);
+  transition: box-shadow 0.25s ease;
+}
+
+.field::placeholder {
+  color: rgb(255 255 255 / 0.35);
+}
+
+.field:focus {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.28),
+    0 0 0 4px rgb(255 255 255 / 0.08);
+}
+
+/* The one loud control on a page: white on black, the page's only fill. */
+.btn-solid {
+  background: var(--signal);
+  color: var(--ink);
+  border-radius: 999px;
+  font-weight: 600;
+  transition:
+    background-color 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.btn-solid:hover:not(:disabled) {
+  background: #d9dade;
+}
+
+.btn-solid:disabled {
+  background: rgb(255 255 255 / 0.14);
+  color: rgb(255 255 255 / 0.4);
+  cursor: not-allowed;
+}
+
+/* Everything else: hairline, no fill, brightens on hover. */
+.btn-quiet {
+  border-radius: 999px;
+  color: rgb(255 255 255 / 0.66);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+  transition:
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.btn-quiet:hover:not(:disabled) {
+  color: var(--signal);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.4);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.7);
+  outline-offset: 3px;
+}
+
+/*
+ * Warnings and errors, monochrome. Colour is not available as a signal here,
+ * so severity is carried by contrast: an inverted block is the loudest thing
+ * on a black page, and a hairline-edged block is the quieter version.
+ */
+.notice-loud {
+  background: var(--paper);
+  color: var(--text-light);
+  border-radius: 1.5rem;
+}
+
+.notice-quiet {
+  border-radius: 1.5rem;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22);
+}
+
+/* Connected-wallet indicator: a monochrome pulse, replacing the gold ring. */
+@keyframes pulse-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgb(255 255 255 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 0);
+  }
+}
+
+.pulse-dot {
+  animation: pulse-dot 2.4s ease-out infinite;
+}
+
+/* The slow sweep under the proving label. */
+@keyframes shimmer-light {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-light {
+  background-image: linear-gradient(
+    90deg,
+    transparent 20%,
+    rgb(255 255 255 / 0.75) 50%,
+    transparent 80%
+  );
+  background-size: 50% 100%;
+  background-repeat: no-repeat;
+  animation: shimmer-light 2.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot,
+  .shimmer-light {
+    animation: none;
+  }
+}
+
+/*
+ * Global body/type reset for the new landing identity. This runs after
+ * index.css's existing "ink and gold" @theme, which /report and /inbox still
+ * use verbatim until Phase 4 re-skins them. Those pages keep their current
+ * color-* utility classes (bg-void, text-bright, ...) unaffected by this
+ * block; only the inherited font-family and body background/color change
+ * app-wide starting now, per the Phase 2 spec.
+ */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  /* Body text is Readex Pro. Display type is opted into per element via
+     .hero-title and the .landing heading rule above, so the display serif
+     never leaks into running copy. */
+  font-family: var(--font-body);
+  background: #000;
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+}

@@ -25,23 +25,28 @@ import {
   type CircuitContext,
 } from '@midnight-ntwrk/compact-runtime';
 
-// Crosses the contract/frontend split on purpose: crypto.ts is the frontend's
-// client-side envelope implementation, and this suite is what proves it
-// matches the contract's Bytes<512> layout. It resolves 'tweetnacl' from
-// frontend/node_modules (Node looks up node_modules from the imported file's
-// own directory, not the test runner's cwd), so no crypto deps are duplicated
-// into contract/package.json.
+// Crosses the contract/sdk split on purpose: envelope.ts/keys.ts are the
+// SDK's client-side envelope implementation, and this suite is what proves it
+// matches the contract's Bytes<512> layout. Imports the pure submodules
+// directly rather than the SDK's index barrel, which also re-exports
+// chain.ts (browser-only: touches `window` and the `@contract` alias at
+// module scope, neither available/aliased in this Node test run). It
+// resolves 'tweetnacl' from sdk/node_modules (Node looks up node_modules from
+// the imported file's own directory, not the test runner's cwd), so no
+// crypto deps are duplicated into contract/package.json.
 import {
   ENVELOPE_BYTES,
   PLAINTEXT_BYTES,
   decodePaddedReport,
   decryptWithRecipientKey,
   encryptToRecipient,
+} from '../../sdk/src/envelope';
+import {
   exportRecipientKeys,
   generateRecipientKeypair,
   importRecipientKeys,
   publicKeyFromSecret,
-} from '../../frontend/src/lib/crypto';
+} from '../../sdk/src/keys';
 
 // ─── Crypto layer ────────────────────────────────────────────────────────────
 
