@@ -34,10 +34,14 @@ import { Contract, ledger } from '@contract/anonymous-whispers/contract/index.js
 import { createDAppConnectorWalletProvider } from './dapp-connector-wallet-provider';
 
 /**
- * Preprod: confirmed working with Lace + in-wallet proving 2026-08-13 (a
- * deploy via /deploy completed in ~110s). Previously targeted Preview because
- * the Preprod indexer was reported lagging by the Midnight team on
- * 2026-07-23 — that was stale by the time this switched.
+ * Preprod. A Lace-wallet deploy via /deploy stalled for 5+ hours on
+ * 2026-08-13: the DUST designation transaction confirmed, but the tDUST tank
+ * stayed empty amid Preprod congestion, so proving never had fees to spend.
+ * Switching to the 1am wallet (which sponsors DUST, bypassing Lace's
+ * designation delay) let the same /deploy flow succeed immediately, on
+ * 2026-08-14 ~06:31 UTC. Previously targeted Preview because the Preprod
+ * indexer was reported lagging by the Midnight team on 2026-07-23 — that was
+ * stale by the time this switched.
  */
 export const NETWORK_ID = 'preprod';
 
@@ -50,22 +54,9 @@ export const NETWORK_ID = 'preprod';
 // operation.
 setNetworkId(NETWORK_ID);
 
-// Retired Preview deployment (deployed 2026-07-23, recorded in
-// .midnight-state.json under deployments.preview). Superseded 2026-08-14 when
-// NETWORK_ID moved to 'preprod'; kept here only as a fallback reference —
-// it is NOT a valid address on Preprod.
-//   const PREVIEW_CONTRACT_ADDRESS =
-//     'ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e';
-
-/**
- * TODO(admin): replace with the address printed by /deploy after deploying a
- * fresh contract on Preprod. Until then this is a placeholder carried over
- * from the retired Preview deployment above — it will not resolve on the
- * Preprod indexer, so readPublicState() returns null and submissions fail
- * until it is replaced.
- */
+/** Deployed via /deploy on the 1am wallet, 2026-08-14 ~06:31 UTC. */
 export const CONTRACT_ADDRESS =
-  'ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e';
+  'e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9';
 
 const INDEXER_URI = 'https://indexer.preprod.midnight.network/api/v4/graphql';
 const INDEXER_WS_URI = 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';
