@@ -8,8 +8,9 @@ organization's own device.
 ## What You Need
 
 - A modern web browser
-- The [Lace wallet](https://www.lace.io/) browser extension, set to the
-  Preprod network
+- Lace wallet or 1am wallet browser extension, set to Preprod network. 1am
+  wallet is recommended because it sponsors DUST (transaction fees)
+  automatically.
 - A little bit of tNIGHT from the
   [Preprod faucet](https://midnight-tmnight-preprod.nethermind.dev) to
   submit a report (organizations also need this to register)
@@ -89,6 +90,13 @@ frozen for over an hour with no counter progress, restart the proof server
 (`cd contract && docker compose stop proof-server && docker compose up -d
 proof-server`) and re-run. Wallet state is persisted, so sync resumes from
 where it left off.
+
+**My deploy or transaction is stuck at "Sending" for a long time**
+
+On Preprod, DUST generation from Lace-designated NIGHT can take hours during
+network congestion. If you're stuck, switch to 1am wallet, which sponsors
+DUST out of the box. Both wallets use the same seed phrase format so you can
+import the same account.
 
 **"This organization hasn't set up a recipient yet" on `/report`**
 

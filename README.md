@@ -12,16 +12,13 @@
 
 | Network | Address |
 |---------|---------|
-| Preprod | `<placeholder: paste after deploy completes>` |
+| Preprod | `e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9` |
 
-Deployment screenshot: `<placeholder: add after deploy>`
+Deployed via the browser at `/deploy` using the 1am wallet, which sponsors
+DUST. Lace also works, but requires DUST designation to complete first,
+which may take time on a congested Preprod.
 
-> Note on current state: the code in this branch (`sdk/src/chain.ts`) is still
-> pointed at the Level 3 **Preview** deployment
-> (`ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e`) while the
-> Preprod deploy finishes syncing. `NETWORK_ID` and `CONTRACT_ADDRESS` get
-> switched over to Preprod once the address above is filled in. See
-> `PROGRESS.md` for the current deploy status.
+Deployment screenshot: `deploy-level4.png`
 
 ## Vision
 
@@ -167,13 +164,15 @@ crypto core, `@midnight-ntwrk/*` 4.1.1 family (`midnight-js-contracts`,
 dedupe conflicting versions across the workspace.
 
 **Frontend**: React 19 with `react-router-dom` 7, Vite 8, TypeScript,
-Tailwind CSS 4, Lace wallet via `@midnight-ntwrk/dapp-connector-api`.
+Tailwind CSS 4, Lace or 1am wallet (1am recommended — sponsors DUST out of
+the box) via `@midnight-ntwrk/dapp-connector-api`.
 
 ## Prerequisites
 
 - Node.js v22+
 - Docker (the proof server runs in a container; `contract/docker-compose.yml`)
-- Lace wallet browser extension, set to the **Preprod** network
+- Lace or 1am wallet browser extension (1am recommended — sponsors DUST out
+  of the box), set to the **Preprod** network
 - Preprod tNIGHT from the faucet at
   [https://midnight-tmnight-preprod.nethermind.dev](https://midnight-tmnight-preprod.nethermind.dev)
 - Linux (the Compact compiler toolchain used in CI targets Ubuntu; see

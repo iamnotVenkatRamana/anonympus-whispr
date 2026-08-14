@@ -96,3 +96,26 @@ If it does reproduce in a real browser too, start with `abstract-level`/`browser
   4. Demo video recorded.
   5. Final round-trip verification against Preprod (register, encrypt,
      submit, decrypt, real wallet).
+
+## Aug 14 checkpoint
+
+- Preprod deployment succeeded via the browser `/deploy` route on the 1am
+  wallet, 2026-08-14 ~06:31 UTC. Address:
+  `e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9`.
+- The Lace attempt earlier failed: the DUST designation transaction
+  confirmed, but the tDUST tank stayed empty for 5+ hours amid Preprod
+  congestion, so proving never had fees to spend.
+- Switched to the 1am wallet, which sponsors DUST out of the box. The same
+  `/deploy` flow then succeeded immediately.
+- `CONTRACT_ADDRESS` in `sdk/src/chain.ts` updated to the new address; the
+  retired Preview address is no longer kept as a commented-out fallback —
+  removed entirely now that the app is fully on Preprod.
+- README.md and docs/USAGE.md updated to mention the 1am wallet path (README
+  Contract Address/Tech Stack/Prerequisites; USAGE What You Need plus a new
+  troubleshooting entry for DUST-stuck transactions).
+- Remaining Level 4 work:
+  1. Deployment screenshot (`deploy-level4.png`) added to the repo root.
+  2. Round-trip verification against the live Preprod contract (Report +
+     Inbox: register, encrypt, submit, decrypt, real wallet).
+  3. Demo video recorded.
+  4. Submission.
