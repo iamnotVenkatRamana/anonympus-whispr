@@ -8,23 +8,14 @@
  * page would then start failing for reasons that belong to the wallet path.
  *
  * KEEP IN SYNC with NETWORK_ID and CONTRACT_ADDRESS in sdk/src/chain.ts.
- *
- * Note on the network name: the Level 4 spec says "Preprod", but the contract
- * that is actually deployed and verified lives on Preview (the Preprod indexer
- * was lagging; see the comment in sdk/src/chain.ts). The page says Preview
- * because the page must be true. If a Preprod deploy happens, change these two
- * constants and the copy follows.
  */
-export const NETWORK_LABEL = 'preview';
+export const NETWORK_LABEL = 'preprod';
 
 export const CONTRACT_ADDRESS =
-  'ab72e8ada93002dec30224611e2af77d7f00142beb2975d7cd254ddd68205c5e';
+  'e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9';
 
 export const EXPLORER_URL = `https://${NETWORK_LABEL}.midnightexplorer.com/contracts/${CONTRACT_ADDRESS}`;
 
-/** Placeholders the user fills in once the accounts and deploy exist. */
 export const GITHUB_URL = 'https://github.com/Emmanuellsensai/anonymous-whispers';
-/** PLACEHOLDER. X profile not created yet. */
-export const X_URL = '#';
-/** PLACEHOLDER. Vercel URL pasted after the frontend deploy. */
-export const LIVE_DEMO_URL = '#';
+export const X_URL = 'https://x.com/AnonymousWhispr';
+export const LIVE_DEMO_URL = 'https://anonymous-whispers.vercel.app/report';
