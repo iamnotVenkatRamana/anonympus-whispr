@@ -57,7 +57,10 @@ jobs:
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           echo "$HOME/.compact/bin" >> "$GITHUB_PATH"
       - name: Install Compact compiler toolchain
-        run: compact update
+        # Pinned: toolchain 0.34.0 (Aug 2026) bumped the emitted runtime to
+        # 0.19.0, breaking against the @midnight-ntwrk/compact-runtime@0.16.0
+        # this workspace pins. 0.31.1 is the last release targeting 0.16.0.
+        run: compact update 0.31.1
       - name: Compile contract
         run: npm run --workspace=contract compile
       - name: Run contract tests
