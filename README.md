@@ -23,7 +23,7 @@ Deployed via the browser at `/deploy` using the 1am wallet, which sponsors
 DUST. Lace also works, but requires DUST designation to complete first,
 which may take time on a congested Preprod.
 
-Deployment screenshot: `deploy-level4.png`
+Deployment screenshot: `deploy.png`
 
 ## Vision
 
