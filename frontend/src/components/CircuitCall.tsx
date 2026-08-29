@@ -37,17 +37,18 @@ const toHexString = (bytes: Uint8Array) =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 
 /**
- * Pads or truncates the report to exactly `Bytes<256>` and hashes *the padded
- * buffer*: the padded bytes are what the circuit actually sees, so hashing the
- * raw text instead would produce a hash the proof doesn't attest to. This
- * mirrors the Node path in src/cli.ts byte for byte.
+ * Pads or truncates the report to exactly `Bytes<256>` — the fixed-width
+ * private witness the circuit consumes. The circuit itself computes
+ * persistentHash of these bytes in-circuit and discloses only the hash, so
+ * this helper returns just the padded buffer (a browser-side SHA-256 digest
+ * over the same bytes is included purely for the display animation below).
  */
 const prepareReport = async (text: string) => {
   const reportContent = new Uint8Array(REPORT_CONTENT_BYTES);
   const encoded = new TextEncoder().encode(text);
   reportContent.set(encoded.subarray(0, REPORT_CONTENT_BYTES));
   const digest = await crypto.subtle.digest('SHA-256', reportContent);
-  return { reportContent, contentHash: new Uint8Array(digest) };
+  return { reportContent, displayHash: new Uint8Array(digest) };
 };
 
 /**
@@ -130,8 +131,8 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
     if (!report) return;
 
     try {
-      const { reportContent, contentHash } = await prepareReport(report);
-      const hash = toHexString(contentHash);
+      const { reportContent, displayHash } = await prepareReport(report);
+      const hash = toHexString(displayHash);
 
       // Drop the plaintext before any await that could render. From here on the
       // report exists only as `reportContent`, a local binding that is never
@@ -142,7 +143,9 @@ export function CircuitCall({ api, address, onSubmitted }: Props) {
       const contract = contractRef.current ?? (await connectToContract(api, address));
       contractRef.current = contract;
 
-      const tx = await contract.callTx.submit_report(contentHash, reportContent);
+      // Single-argument signature: submit_report takes only the private
+      // witness. The circuit derives the on-chain hash from it in-circuit.
+      const tx = await contract.callTx.submit_report(reportContent);
 
       setPhase({ kind: 'done', hash, txId: tx.public.txId });
       onSubmitted();

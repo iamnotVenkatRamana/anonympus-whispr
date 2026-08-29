@@ -3,7 +3,6 @@
  */
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -179,16 +178,14 @@ async function main() {
       switch (choice.trim()) {
         case '1': {
           const reportText = await rl.question('  Enter your report: ');
-          // The circuit takes a fixed-width Bytes<256> witness, so the text is
-          // truncated or zero-padded to exactly 256 bytes before hashing. The
-          // hash must be taken over the padded buffer — that is what the
-          // circuit sees.
+          // The circuit takes a fixed-width Bytes<256> private witness. Text
+          // is truncated or zero-padded to exactly 256 bytes before it is
+          // handed to the prover. The circuit itself computes persistentHash
+          // over these same bytes in-circuit and discloses only the hash, so
+          // there is no separate hash argument to pass.
           const reportContentBytes = new Uint8Array(REPORT_CONTENT_BYTES);
           const encoded = Buffer.from(reportText, 'utf-8');
           reportContentBytes.set(encoded.subarray(0, REPORT_CONTENT_BYTES));
-          const contentHash = new Uint8Array(
-            createHash('sha256').update(reportContentBytes).digest(),
-          );
 
           if (encoded.length > REPORT_CONTENT_BYTES) {
             console.log(`\n  ⚠ Report truncated to ${REPORT_CONTENT_BYTES} bytes.`);
@@ -196,10 +193,9 @@ async function main() {
 
           console.log('\n  Submitting transaction (this may take 30-60 seconds)...');
           try {
-            const tx = await deployed.callTx.submit_report(contentHash, reportContentBytes);
-            const hashHex = Buffer.from(contentHash).toString('hex');
-            console.log(`\n  ✅ Report submitted (hash: ${hashHex})`);
-            console.log('  The report text itself was never published — only this hash is on-chain.');
+            const tx = await deployed.callTx.submit_report(reportContentBytes);
+            console.log('\n  ✅ Report submitted.');
+            console.log('  The report text itself was never published — only its in-circuit persistentHash is on-chain.');
             console.log(`  Transaction ID: ${tx.public.txId}`);
             console.log(`  Block height: ${tx.public.blockHeight}\n`);
           } catch (error) {

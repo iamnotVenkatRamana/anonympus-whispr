@@ -9,13 +9,6 @@
       "proof": true,
       "arguments": [
         {
-          "name": "content_hash",
-          "type": {
-            "type-name": "Bytes",
-            "length": 32
-          }
-        },
-        {
           "name": "report_content",
           "type": {
             "type-name": "Bytes",
@@ -61,10 +54,10 @@
           }
         },
         {
-          "name": "ciphertext_hash",
+          "name": "plaintext",
           "type": {
             "type-name": "Bytes",
-            "length": 32
+            "length": 256
           }
         }
       ],

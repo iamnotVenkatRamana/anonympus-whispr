@@ -43,16 +43,23 @@ const toHexString = (bytes: Uint8Array) =>
   Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
 
 /**
- * Encrypts the report and hashes the resulting envelope. The hash covers the
- * ENVELOPE (what the chain stores), not the plaintext: anyone can re-hash the
- * public ciphertext to verify the commitment, and the plaintext hash would
- * leak an oracle for guessing short reports.
+ * Encrypts the report and returns both the sealed envelope AND the padded
+ * plaintext used to build it. The plaintext is fed into the circuit as a
+ * PRIVATE witness: the circuit's persistentHash commitment (disclosed as
+ * latest_report_hash) is derived from these exact 256 bytes, so the two must
+ * be byte-for-byte the same input that went into nacl.box. The plaintext
+ * never leaves the browser as data — it is consumed by the local prover to
+ * generate a ZK proof and discarded.
+ *
+ * `envelopeDigest` is also computed here purely so the UI can display a
+ * stable browser-visible hash while proving; it is not sent to the chain.
  */
 const prepareEncryptedReport = async (text: string, recipientPublicKey: Uint8Array) => {
-  const encoded = new TextEncoder().encode(text).subarray(0, PLAINTEXT_BYTES);
-  const envelope = encryptToRecipient(encoded, recipientPublicKey);
+  const padded = new Uint8Array(PLAINTEXT_BYTES);
+  padded.set(new TextEncoder().encode(text).subarray(0, PLAINTEXT_BYTES));
+  const envelope = encryptToRecipient(padded, recipientPublicKey);
   const digest = await crypto.subtle.digest('SHA-256', envelope);
-  return { envelope, envelopeHash: new Uint8Array(digest) };
+  return { envelope, plaintext: padded, envelopeDigest: new Uint8Array(digest) };
 };
 
 /** Same resolve-out-of-noise animation as the Level 2 form. */
@@ -93,22 +100,26 @@ export function EncryptedReportForm({ api, address, recipientPublicKey, onSubmit
     if (!report) return;
 
     try {
-      const { envelope, envelopeHash } = await prepareEncryptedReport(
+      const { envelope, plaintext, envelopeDigest } = await prepareEncryptedReport(
         report,
         recipientPublicKey,
       );
-      const hash = toHexString(envelopeHash);
+      const hash = toHexString(envelopeDigest);
 
-      // Drop the plaintext before any await that could render, exactly as the
-      // Level 2 form does. From here on the report exists only inside the
-      // sealed envelope.
+      // Drop the plaintext string from React state before any await that could
+      // render. The padded `plaintext` binding below is a local Uint8Array
+      // that never enters state; it is handed straight to the ZK prover as a
+      // private witness and goes out of scope with this call.
       setText('');
       setPhase({ kind: 'proving', hash });
 
       const contract = contractRef.current ?? (await connectToContract(api, address));
       contractRef.current = contract;
 
-      const tx = await level3CallTx(contract).submit_encrypted_report(envelope, envelopeHash);
+      // Second argument is the PRIVATE witness the circuit uses to derive its
+      // in-circuit persistentHash commitment. It is a proof input, not a
+      // ledger input — the chain never sees these bytes.
+      const tx = await level3CallTx(contract).submit_encrypted_report(envelope, plaintext);
 
       setPhase({ kind: 'done', hash, txId: tx.public.txId });
       onSubmitted();

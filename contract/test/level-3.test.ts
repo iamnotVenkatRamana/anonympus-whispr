@@ -145,8 +145,20 @@ type Level3Circuits = {
   submit_encrypted_report: (
     ctx: CircuitContext,
     ciphertext: Uint8Array,
-    hash: Uint8Array,
+    plaintext: Uint8Array,
   ) => { context: CircuitContext; result: unknown[] };
+};
+
+/**
+ * Reproduces the padded 256-byte plaintext the frontend produces before
+ * encryption. The circuit's persistentHash commitment is computed over this
+ * padded buffer, so tests that submit an envelope must pass the same padded
+ * bytes as the plaintext witness.
+ */
+const padPlaintext = (text: string): Uint8Array => {
+  const padded = new Uint8Array(PLAINTEXT_BYTES);
+  padded.set(new TextEncoder().encode(text).subarray(0, PLAINTEXT_BYTES));
+  return padded;
 };
 
 const circuits = contract.circuits as typeof contract.circuits & Partial<Level3Circuits>;
@@ -203,16 +215,15 @@ describe.skipIf(!hasLevel3Circuits)('circuit: register_recipient', () => {
 describe.skipIf(!hasLevel3Circuits)('circuit: submit_encrypted_report', () => {
   const REPORT = 'Falsified inspection records in warehouse 4, March through May.';
 
-  const submitOne = (ctx: CircuitContext, envelope: Uint8Array) => {
-    const hash = new Uint8Array(32).fill(0x5c); // stand-in commitment
-    return circuits.submit_encrypted_report!(ctx, envelope, hash);
-  };
+  const submitOne = (ctx: CircuitContext, envelope: Uint8Array, plaintext: Uint8Array) =>
+    circuits.submit_encrypted_report!(ctx, envelope, plaintext);
 
   it('appends the ciphertext to the list and increments the counter', () => {
     const recipient = generateRecipientKeypair();
-    const envelope = encryptToRecipient(new TextEncoder().encode(REPORT), recipient.publicKey);
+    const padded = padPlaintext(REPORT);
+    const envelope = encryptToRecipient(padded, recipient.publicKey);
 
-    const results = submitOne(initialContext, envelope);
+    const results = submitOne(initialContext, envelope, padded);
     const after = ledgerFrom(results.context);
 
     expect(after.counter).toBe(1n);
@@ -221,13 +232,65 @@ describe.skipIf(!hasLevel3Circuits)('circuit: submit_encrypted_report', () => {
     expect(stored).toEqual(envelope);
   });
 
-  it('stores the ciphertext hash as the public commitment', () => {
+  it('stores an in-circuit hash commitment derived from the private plaintext', () => {
     const recipient = generateRecipientKeypair();
-    const envelope = encryptToRecipient(new TextEncoder().encode(REPORT), recipient.publicKey);
-    const hash = new Uint8Array(32).fill(0x5c);
+    const padded = padPlaintext(REPORT);
+    const envelope = encryptToRecipient(padded, recipient.publicKey);
 
-    const results = circuits.submit_encrypted_report!(initialContext, envelope, hash);
-    expect(ledgerFrom(results.context).latest_report_hash).toEqual(hash);
+    const results = submitOne(initialContext, envelope, padded);
+    const after = ledgerFrom(results.context);
+
+    // The commitment is computed inside the circuit from the private plaintext
+    // witness, so we cannot know its exact bytes here — but it must be a
+    // non-empty 32-byte value, and it must be deterministic and preimage-
+    // bound (the next two tests exercise those properties directly).
+    expect(after.latest_report_hash.length).toBe(32);
+    expect(after.latest_report_hash.some((b) => b !== 0)).toBe(true);
+  });
+
+  it('produces a deterministic commitment: same plaintext witness → same hash', () => {
+    const recipient = generateRecipientKeypair();
+    const padded = padPlaintext(REPORT);
+
+    // Fresh envelopes each time (nacl.box uses a fresh ephemeral key), but the
+    // private witness is identical, so the disclosed commitment must match.
+    const first = submitOne(
+      initialContext,
+      encryptToRecipient(padded, recipient.publicKey),
+      padded,
+    );
+    const second = submitOne(
+      initialContext,
+      encryptToRecipient(padded, recipient.publicKey),
+      padded,
+    );
+
+    expect(ledgerFrom(first.context).latest_report_hash).toEqual(
+      ledgerFrom(second.context).latest_report_hash,
+    );
+  });
+
+  it('produces different commitments for different plaintext witnesses', () => {
+    const recipient = generateRecipientKeypair();
+    const paddedA = padPlaintext(REPORT);
+    const paddedB = padPlaintext(`${REPORT} (revised)`);
+
+    const a = submitOne(
+      initialContext,
+      encryptToRecipient(paddedA, recipient.publicKey),
+      paddedA,
+    );
+    const b = submitOne(
+      initialContext,
+      encryptToRecipient(paddedB, recipient.publicKey),
+      paddedB,
+    );
+
+    // Distinct plaintexts must yield distinct commitments — this is the
+    // property that makes the private witness actually constrain the proof.
+    expect(ledgerFrom(a.context).latest_report_hash).not.toEqual(
+      ledgerFrom(b.context).latest_report_hash,
+    );
   });
 
   it('keeps counting across multiple submissions, newest first', () => {
@@ -235,12 +298,10 @@ describe.skipIf(!hasLevel3Circuits)('circuit: submit_encrypted_report', () => {
     let ctx: CircuitContext = initialContext;
     const envelopes: Uint8Array[] = [];
     for (let i = 0; i < 3; i++) {
-      const envelope = encryptToRecipient(
-        new TextEncoder().encode(`${REPORT} #${i}`),
-        recipient.publicKey,
-      );
+      const padded = padPlaintext(`${REPORT} #${i}`);
+      const envelope = encryptToRecipient(padded, recipient.publicKey);
       envelopes.push(envelope);
-      ctx = submitOne(ctx, envelope).context;
+      ctx = submitOne(ctx, envelope, padded).context;
     }
 
     const after = ledgerFrom(ctx);
@@ -253,12 +314,12 @@ describe.skipIf(!hasLevel3Circuits)('circuit: submit_encrypted_report', () => {
   it('never exposes the plaintext or the recipient secret key on the ledger, and the stored ciphertext decrypts only for the recipient', () => {
     const recipient = generateRecipientKeypair();
     const stranger = generateRecipientKeypair();
-    const plaintext = new TextEncoder().encode(REPORT);
-    const envelope = encryptToRecipient(plaintext, recipient.publicKey);
+    const padded = padPlaintext(REPORT);
+    const envelope = encryptToRecipient(padded, recipient.publicKey);
 
     let ctx: CircuitContext = initialContext;
     ctx = circuits.register_recipient!(ctx, recipient.publicKey).context;
-    ctx = submitOne(ctx, envelope).context;
+    ctx = submitOne(ctx, envelope, padded).context;
     const after = ledgerFrom(ctx);
 
     // Serialize everything public and assert the sensitive bytes are absent.
@@ -272,7 +333,11 @@ describe.skipIf(!hasLevel3Circuits)('circuit: submit_encrypted_report', () => {
       ),
     ).toString('hex');
 
-    const plaintextHex = Buffer.from(plaintext).toString('hex');
+    // The full padded plaintext is 256 bytes; assert none of it (including
+    // the trailing zero padding, which would look like a run of "00" bytes)
+    // leaked into public state as a whole slice. We use the non-padded
+    // encoded prefix as the sensitive fingerprint.
+    const plaintextHex = Buffer.from(new TextEncoder().encode(REPORT)).toString('hex');
     const secretKeyHex = Buffer.from(recipient.secretKey).toString('hex');
     expect(serialised).not.toContain(plaintextHex);
     expect(serialised).not.toContain(secretKeyHex);

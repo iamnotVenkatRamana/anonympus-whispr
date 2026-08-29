@@ -282,8 +282,14 @@ type CallTxOutcome = { public: { txId: string } };
 export const level3CallTx = (contract: DeployedWhispersContract) =>
   contract.callTx as unknown as {
     register_recipient(newPublicKey: Uint8Array): Promise<CallTxOutcome>;
+    // Signature matches the on-chain circuit: (ciphertext, plaintext), where
+    // plaintext is the padded 256-byte report that gets passed through the
+    // circuit as a PRIVATE witness. The circuit computes persistentHash of it
+    // in-circuit and discloses only the hash into latest_report_hash — the
+    // plaintext bytes themselves never touch the ledger. See the contract's
+    // submit_encrypted_report circuit for the privacy analysis.
     submit_encrypted_report(
       ciphertext: Uint8Array,
-      ciphertextHash: Uint8Array,
+      plaintext: Uint8Array,
     ): Promise<CallTxOutcome>;
   };

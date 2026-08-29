@@ -2,6 +2,48 @@
 
 Status as of 2026-08-07, branch `level-4-restructure`. Not committed — this file is a working note for whoever (human or Claude) picks this up next, especially across the Linux→Windows machine switch.
 
+## 2026-08-29 — Aliit Builder rejection fix (in-circuit privacy)
+
+Reviewer's rejection (paraphrased): the private input `report_content` was
+declared but never used in the circuit body; the disclosed values were all
+caller-supplied, so the ZK proof did not attest to anything about the private
+witness. Confidentiality came entirely from off-chain nacl.box encryption
+rather than from any Midnight in-circuit constraint.
+
+Fix (surgical, only the contract and its immediate callers touched):
+
+- `submit_report(report_content: Bytes<256>)` — signature simplified. The
+  circuit now computes `const content_hash = persistentHash<Bytes<256>>(report_content);`
+  in-circuit and discloses only that hash into `latest_report_hash`. The
+  private witness deterministically constrains a public output, so the ZK
+  proof binds the caller to a specific preimage.
+- `submit_encrypted_report(ciphertext: Bytes<512>, plaintext: Bytes<256>)` —
+  the caller-supplied `ciphertext_hash` argument was replaced with a private
+  `plaintext` witness. The circuit computes
+  `persistentHash<Bytes<256>>(plaintext)` in-circuit and discloses that as
+  `latest_report_hash`. Ciphertext remains publicly disclosed (that is the
+  delivery channel); the commitment on-chain is now bound to knowledge of
+  the plaintext rather than a value the caller could fabricate.
+- `persistentHash` is Compact's SHA-256-based standard-library compression
+  function (`circuit persistentHash<T>(value: T): Bytes<32>`). Same guarantee
+  the reviewer named ("SHA-256 preimage binding"), correct Compact spelling.
+- Follow-through: `sdk/src/chain.ts` `level3CallTx` type updated to
+  `(ciphertext, plaintext)`; `frontend/src/components/EncryptedReportForm.tsx`
+  now hands the padded 256-byte plaintext straight to the prover instead of
+  a caller-computed envelope hash; `contract/scripts/cli.ts` no longer
+  precomputes SHA-256 for `submit_report`; the dead
+  `frontend/src/components/CircuitCall.tsx` was updated to the new
+  single-argument signature for typecheck cleanliness.
+- Tests rewritten to assert the binding property directly: identical
+  witnesses produce identical disclosed hashes, distinct witnesses produce
+  distinct disclosed hashes, and the private bytes never appear in
+  serialised ledger state. Exact hash values are not hard-coded — they come
+  out of the circuit at runtime.
+
+Ledger shape unchanged. No frontend UI change beyond passing the witness
+that already existed in the encryption path.
+
+
 ## SDK extraction: COMPLETE (Phases 1–5, all committed)
 
 ```
