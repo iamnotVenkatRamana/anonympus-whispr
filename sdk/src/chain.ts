@@ -54,9 +54,14 @@ export const NETWORK_ID = 'preprod';
 // operation.
 setNetworkId(NETWORK_ID);
 
-/** Deployed via /deploy on the 1am wallet, 2026-08-14 ~06:31 UTC. */
+/**
+ * Deployed via /deploy on the 1am wallet, 2026-08-29 (Aliit Builder rejection
+ * fix redeploy). Supersedes e64ad6c5… — that address ran the pre-fix circuits
+ * whose signatures did not accept the new (ciphertext, plaintext) call
+ * shape, so a redeploy was required, not just a code update.
+ */
 export const CONTRACT_ADDRESS =
-  'e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9';
+  '0b24b5da3eaf66860c1b69a6d31f3e86089b5c4af48c2dc4be6f6c5b7f4b34f5';
 
 const INDEXER_URI = 'https://indexer.preprod.midnight.network/api/v4/graphql';
 const INDEXER_WS_URI = 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws';

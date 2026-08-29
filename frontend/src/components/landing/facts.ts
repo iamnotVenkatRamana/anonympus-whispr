@@ -12,7 +12,7 @@
 export const NETWORK_LABEL = 'preprod';
 
 export const CONTRACT_ADDRESS =
-  'e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9';
+  '0b24b5da3eaf66860c1b69a6d31f3e86089b5c4af48c2dc4be6f6c5b7f4b34f5';
 
 export const EXPLORER_URL = `https://${NETWORK_LABEL}.midnightexplorer.com/contracts/${CONTRACT_ADDRESS}`;
 

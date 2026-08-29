@@ -12,7 +12,12 @@
 
 | Network | Address |
 |---------|---------|
-| Preprod | `e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9` |
+| Preprod | `0b24b5da3eaf66860c1b69a6d31f3e86089b5c4af48c2dc4be6f6c5b7f4b34f5` |
+
+Previous address `e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9`
+ran the pre-Aliit-review circuits. The 2026-08-29 fix (in-circuit
+`persistentHash` binding — see `PROGRESS.md`) changed circuit signatures,
+so a redeploy was required.
 
 Deployed via the browser at `/deploy` using the 1am wallet, which sponsors
 DUST. Lace also works, but requires DUST designation to complete first,

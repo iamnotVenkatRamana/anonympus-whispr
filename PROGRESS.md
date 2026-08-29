@@ -43,6 +43,12 @@ Fix (surgical, only the contract and its immediate callers touched):
 Ledger shape unchanged. No frontend UI change beyond passing the witness
 that already existed in the encryption path.
 
+Redeployed to Preprod on 2026-08-29 via /deploy on the 1am wallet. New
+contract address: `0b24b5da3eaf66860c1b69a6d31f3e86089b5c4af48c2dc4be6f6c5b7f4b34f5`.
+The previous `e64ad6c5…` address ran the pre-fix circuits and cannot
+accept the new (ciphertext, plaintext) call shape, so the address bump
+had to land at the same time as the circuit change.
+
 
 ## SDK extraction: COMPLETE (Phases 1–5, all committed)
 
