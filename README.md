@@ -18,7 +18,7 @@
 
 Previous address `e64ad6c52fe4fa1a5fa39df58350a722c2d4f9e02d09aaf36c9b9c0d97a22ac9`
 ran the pre-Aliit-review circuits. The 2026-08-29 fix (in-circuit
-`persistentHash` binding — see `PROGRESS.md`) changed circuit signatures,
+`persistentHash` binding - see `PROGRESS.md`) changed circuit signatures,
 so a redeploy was required.
 
 Deployed via the browser at `/deploy` using the 1am wallet, which sponsors
@@ -142,14 +142,14 @@ crypto core, `@midnight-ntwrk/*` 4.1.1 family (`midnight-js-contracts`,
 dedupe conflicting versions across the workspace.
 
 **Frontend**: React 19 with `react-router-dom` 7, Vite 8, TypeScript,
-Tailwind CSS 4, Lace or 1am wallet (1am recommended — sponsors DUST out of
+Tailwind CSS 4, Lace or 1am wallet (1am recommended - sponsors DUST out of
 the box) via `@midnight-ntwrk/dapp-connector-api`.
 
 ## Prerequisites
 
 - Node.js v22+
 - Docker (the proof server runs in a container; `contract/docker-compose.yml`)
-- Lace or 1am wallet browser extension (1am recommended — sponsors DUST out
+- Lace or 1am wallet browser extension (1am recommended - sponsors DUST out
   of the box), set to the **Preprod** network
 - Preprod tNIGHT from the faucet at
   [https://midnight-tmnight-preprod.nethermind.dev](https://midnight-tmnight-preprod.nethermind.dev)
@@ -215,22 +215,6 @@ for both reporters and organizations.
 ## Product X Profile
 
 [@AnonymousWhispr](https://x.com/AnonymousWhispr)
-
-## User Feedback
-
-Submitted via: [Anonymous Whispers Feedback Form](https://forms.gle/gC3inyFCvDzYvcq78)
-
-### Onboarded Users (All)
-
-| User ID | User Name | Email | Wallet Address | Feedback Summary |
-|---------|-----------|-------|-----------------|-------------------|
-| _(none yet, filled in after onboarding)_ | | | | |
-
-### Feedback Implementation (Selected)
-
-| User ID | User Name | Email | Wallet Address | Feedback Summary | Improvements Made | Commit ID |
-|---------|-----------|-------|-----------------|-------------------|--------------------|-----------|
-| _(none yet, filled in after acting on feedback)_ | | | | | | |
 
 ## Future Scope
 
