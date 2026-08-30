@@ -35,14 +35,37 @@ type Status =
 
 /**
  * Wallets inject under `window.midnight` keyed by UUID, and a single wallet may
- * register more than one entry (e.g. one per supported API version). Lace is
- * preferred when present; otherwise the first injected wallet is used, since
- * any connector-compliant wallet will work.
+ * register more than one entry (e.g. one per supported API version). Any
+ * connector-compliant wallet will work, but the preference order below is
+ * deliberate — see `findPreferredWallet` for the reasoning.
  */
 const discoverWallets = (): InitialAPI[] => Object.values(window.midnight ?? {});
 
-const findPreferredWallet = (wallets: InitialAPI[]): InitialAPI | undefined =>
-  wallets.find((wallet) => wallet.rdns.toLowerCase().includes('lace')) ?? wallets[0];
+/**
+ * Preference order:
+ *   1. 1am — sponsors tDUST out of the box, so proving Just Works on Preprod.
+ *   2. Any non-Lace wallet — same connector-compliance guarantee, and avoids
+ *      falling into the Lace path when a working wallet exists next to it.
+ *   3. Lace — only if nothing else is injected.
+ *   4. `wallets[0]` — last-resort tiebreaker for an unrecognised set.
+ *
+ * The demotion of Lace fixes a real UX bug: a locked Lace beside an unlocked
+ * 1am used to make the page report "Wallet is locked" and refuse to connect,
+ * because the old order picked Lace unconditionally.
+ */
+const findPreferredWallet = (wallets: InitialAPI[]): InitialAPI | undefined => {
+  const isLace = (wallet: InitialAPI): boolean =>
+    wallet.rdns.toLowerCase().includes('lace');
+  const isOneAm = (wallet: InitialAPI): boolean =>
+    wallet.rdns.toLowerCase().includes('1am');
+
+  return (
+    wallets.find(isOneAm) ??
+    wallets.find((wallet) => !isLace(wallet)) ??
+    wallets.find(isLace) ??
+    wallets[0]
+  );
+};
 
 /** `mn_shield-addr1abc...4ysm`: enough to recognize, too little to read out. */
 const truncateAddress = (address: string): string =>
