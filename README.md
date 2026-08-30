@@ -8,6 +8,8 @@
 
 [https://anonymous-whispers.vercel.app](https://anonymous-whispers.vercel.app)
 
+▶ Watch the demo: [https://youtu.be/E-LLLA5J6iY](https://youtu.be/E-LLLA5J6iY)
+
 ## Contract Address
 
 | Network | Address |
