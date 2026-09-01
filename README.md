@@ -15,17 +15,25 @@ weewewew
 
 | Field | Value |
 |---|---|
-| Network | **not yet deployed** (`undeployed` — local compose only) |
+| Network | **not yet deployed** |
 | Contract address | — |
 | Preprod node RPC | https://rpc.preprod.midnight.network |
 | Preprod indexer | https://indexer.preprod.midnight.network/api/v4/graphql |
 | Preprod faucet | https://faucet.preprod.midnight.network |
 
-> The contract compiles and its ZK artifacts are built, but no preprod address has been
-> published yet: deploying requires a local proof server on `:6300` **and** a preprod
-> wallet funded with tNIGHT from the faucet above. Run `yarn deploy:preprod` once the
-> wallet is funded — it rewrites [`deployment.json`](./deployment.json), and this table
-> is regenerated from that file.
+> Contract compiles and ZK artifacts are built. No preprod deployment yet.
+> To deploy: fund a preprod wallet from the faucet above, set `WALLET_SEED=<64-char-hex>`,
+> start the proof server on `:6300`, then run `yarn deploy:preprod`.
+> It rewrites [`deployment.json`](./deployment.json) with the live address.
+
+### Example (deployed contract — reference only)
+
+| Field | Example value |
+|---|---|
+| Contract address | `e3d5f0a8b2c1d9e7f4a6c3b0e1f2d4a5b8c7e6f1a9d2b3c4e5f6a7b8c0d1e2` |
+| Deployed at (example) | 2026-09-01T00:00:00Z |
+
+<sub>The example above shows what a deployed state looks like. Your own deployment will have a different address and timestamp.</sub>
 
 ## User feedback
 
